@@ -1,0 +1,112 @@
+
+
+/* General Styles */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+/* App Container */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Header */
+.header {
+  background-color: #4CAF50;
+  color: white;
+  text-align:center;
+  padding: 2rem;
+  font-size: 1.5rem;
+  height: 3rem;
+}
+
+
+
+/* Layout */
+.main-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Left Sidebar */
+.sidebar-left {
+  width: 20%;
+  background-color: #f4f4f4;
+  padding: 1rem;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+}
+
+.sidebar-left h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-left ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar-left ul li {
+  padding: 0.5rem;
+  background: #e7e7e7;
+  margin-bottom: 0.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.sidebar-left ul li:hover {
+  background: #d4d4d4;
+}
+
+/* Calendar Section */
+.calendar-section {
+  flex: 1;
+  padding: 1rem;
+  text-align: center;
+}
+
+.calendar-placeholder {
+  height: 80%;
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9f9f9;
+  color: #888;
+}
+
+/* Right Sidebar */
+.sidebar-right {
+  width: 10%;
+  background-color: #f4f4f4;
+  padding: 1rem;
+  border-left: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.sidebar-right .icon {
+  font-size: 1.5rem;
+  padding: 1rem;
+  background: #e7e7e7;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+}
+
+.sidebar-right .icon:hover {
+  background: #d4d4d4;
+}
+
