@@ -10,7 +10,7 @@ function HomePage() {
 
             <div className="main-layout">
                 {/* Left Sidebar */}
-                <aside className="sidebar-left">
+                <aside className="sidebar-left"> 
                     <h2>Groups</h2>
                     <ul>
                         <li>Group 1</li>
