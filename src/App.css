@@ -1,16 +1,7 @@
-
-
-/* General Styles */
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  color: #333;
-}
-
-/* App Container */
+/* General Layout */
 .app-container {
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
   height: 100vh;
 }
 
@@ -18,96 +9,74 @@ body {
 .header {
   background-color: #4CAF50;
   color: white;
-  text-align:center;
-  padding: 2rem;
-  font-size: 1.5rem;
-  height: 3rem;
-  line-height: 1rem;
+  text-align: center;
+  height: 5rem;
+  line-height: 5rem;
+  font-size: 2rem;
+  font-weight: bold;
 }
 
-
-
-/* Layout */
-.main-layout {
+/* Main Layout */
+.main-container {
   display: flex;
   flex: 1;
-  overflow: hidden;
 }
 
 /* Left Sidebar */
-.sidebar-left {
+.left-sidebar {
   width: 20%;
   background-color: #f4f4f4;
   padding: 1rem;
   border-right: 1px solid #ddd;
-  overflow-y: auto;
 }
 
-.sidebar-left h2 {
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-}
-
-.sidebar-left ul {
-  list-style: none;
-  padding: 0;
-}
-
-.sidebar-left ul li {
+/* Group Button */
+.group-button {
+  width: 100%;
   padding: 0.5rem;
-  background: #e7e7e7;
-  margin-bottom: 0.5rem;
-  border-radius: 5px;
+  margin: 0.3rem 0;
+  border: none;
+  background-color: #ddd;
   cursor: pointer;
+  font-size: 1rem;
 }
 
-.sidebar-left ul li:hover {
-  background: #d4d4d4;
+.group-button:hover {
+  background-color: #bbb;
 }
 
-/* Calendar Section */
-.calendar-section {
+/* Center Panel */
+.center-panel {
   flex: 1;
-  padding: 1rem;
-  text-align: center;
-}
-
-.calendar-placeholder {
-  height: 80%;
-  border: 2px dashed #ccc;
-  border-radius: 10px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  background: #f9f9f9;
-  color: #888;
+  align-items: center;
+  background-color: white;
 }
 
 /* Right Sidebar */
-.sidebar-right {
+.right-sidebar {
   width: 10%;
   background-color: #f4f4f4;
   padding: 1rem;
-  border-left: 1px solid #ddd;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-around;
+  border-left: 1px solid #ddd;
 }
 
-.sidebar-right .icon {
-  font-size: 1.5rem;
-  padding: 1rem;
-  background: #e7e7e7;
-  border-radius: 50%;
+/* Buttons in Right Sidebar */
+.right-sidebar button {
+  font-size: 2rem;
+  background: none;
+  border: none;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.3s;
+  margin: 10px;
 }
 
-.sidebar-right .icon:hover {
-  background: #d4d4d4;
+/* Panel Content */
+.panel-content {
+  text-align: center;
+  font-size: 1.5rem;
+  width: 100%;
 }
-
