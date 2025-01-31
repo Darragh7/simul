@@ -1,0 +1,31 @@
+/* Calendar Container */
+.calendar-container {
+    text-align: center;
+    width: 90%;
+    margin: auto;
+}
+
+/* Calendar Grid Layout */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 1rem;
+}
+
+/* Individual Time Slot */
+.calendar-slot {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    padding: 1rem;
+    font-size: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+/* Highlighted (Selected) Slot */
+.calendar-slot.selected {
+    background-color: #4CAF50;
+    color: white;
+}
