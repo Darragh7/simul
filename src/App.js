@@ -4,10 +4,17 @@ import CalendarView from './components/CalendarView';
 import CreateGroup from './components/CreateGroup';
 import Inbox from './components/Inbox';
 import FriendsList from './components/FriendsList';
+import Login from "./components/Login";
 
 function App() {
     const [activePanel, setActivePanel] = useState('calendar'); 
     const [selectedGroup, setSelectedGroup] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    // If user is not logged in, show the login page
+    if (!isLoggedIn) {
+        return <Login onLoginSuccess={() => setIsLoggedIn(true)} />;
+    }
 
     const groups = ["Work", "Friends", "Family"];
 
@@ -50,6 +57,7 @@ function App() {
                     <button onClick={() => setActivePanel('create-group')}>➕</button>
                     <button onClick={() => setActivePanel('inbox')}>💬</button>
                     <button onClick={() => setActivePanel('friends-list')}>👥</button> {/* Group icon for friends list */}
+                    <button onClick={() => setIsLoggedIn(false)}>🚪 Logout</button> {/* Logout Button */}
                 </aside>
             </div>
         </div>
