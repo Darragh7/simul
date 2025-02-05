@@ -48,7 +48,7 @@ def home():
 
 @app.route("/login")
 def login():
-    auth_url, state = flow.authorization_url(access_type="offline", prompt="consent", include_granted_scopes="true")
+    auth_url, state = flow.authorization_url(access_type="offline", include_granted_scopes="true")
     session["state"] = state
     return redirect(auth_url)
 
@@ -126,8 +126,65 @@ def dashboard():
         <input type="email" name="friend_email" placeholder="Friend's email">
         <button type="submit">Find Free Time</button>
     </form>
+    <h2>Calendar Events</h2>
+    <a href="/list_events"><button type="button">View Calendar Events</button></a>
+    <br><br>
     <a href="/logout">Logout</a>
     """
+    
+@app.route("/list_events")
+@login_required
+def list_events():
+    credentials = Credentials(**session["credentials"])
+    service = build("calendar", "v3", credentials=credentials)
+    
+    # Get events for next 30 days
+    now = datetime.utcnow().isoformat() + 'Z'
+    thirty_days = (datetime.utcnow() + timedelta(days=30)).isoformat() + 'Z'
+    
+    events_result = service.events().list(
+        calendarId='primary',
+        timeMin=now,
+        timeMax=thirty_days,
+        singleEvents=True,
+        orderBy='startTime'
+    ).execute()
+    
+    events = events_result.get('items', [])
+    
+    # Format events for display
+    formatted_events = []
+    for event in events:
+        start = event['start'].get('dateTime', event['start'].get('date'))
+        end = event['end'].get('dateTime', event['end'].get('date'))
+        formatted_events.append({
+            'summary': event.get('summary', 'No title'),
+            'start': start,
+            'end': end,
+            'description': event.get('description', '')
+        })
+    
+    # Create HTML display
+    events_html = "<h1>Your Calendar Events</h1>"
+    events_html += "<a href='/dashboard'>Back to Dashboard</a><br><br>"
+    
+    if not formatted_events:
+        events_html += "<p>No upcoming events found.</p>"
+    else:
+        events_html += "<ul>"
+        for event in formatted_events:
+            events_html += f"""
+                <li>
+                    <strong>{event['summary']}</strong><br>
+                    Start: {event['start']}<br>
+                    End: {event['end']}<br>
+                    {event['description'] if event['description'] else ''}
+                </li>
+                <br>
+            """
+        events_html += "</ul>"
+    
+    return events_html
 
 @app.route("/add_friend", methods=["POST"])
 @login_required

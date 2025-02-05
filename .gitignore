@@ -5,7 +5,7 @@ client_secret_*.json
 simul-3ba34-firebase-adminsdk-fbsvc-3902da270f.json
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.js
 
