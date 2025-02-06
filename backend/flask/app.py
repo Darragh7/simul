@@ -235,6 +235,60 @@ def find_free_time():
 
 def find_mutual_free_periods(user_busy, friend_busy):
     """Find mutual free periods between two users"""
+    # Aggregate all free periods mutual to all group members
+    mutual_free_periods = []
+
+    # Fetch List of group members from database
+    group_members = db.collection('users').where('group', '==', 'group_id').stream()
+
+    # For each user, iterate through their calender slots, adding the free period to the list of free periods
+    # .. if the slot is free among all users
+    
+    # When the free periods for each user are aggregated, find the mutual free periods between all users
+
+    # Return the mutual free periods
+
+    '''Code Dump WIP'''
+
+    '''
+
+    # Initialize a list to store the availability for each member
+    all_user_slots = []
+
+    # For each group member, fetch their calendar slots
+    for member in group_members:
+        user_calendar = db.collection('calendar_slots').where('user_id', '==', member.id).stream()
+
+        # Store the user's free slots (assuming `free` is stored as a boolean)
+        user_free_slots = []
+        for slot in user_calendar:
+            if slot.get('selected') == False:  # Assuming 'selected' is a flag for whether the user is busy
+                user_free_slots.append(slot.get('hour'))
+        
+        # Add the user's free slots to the list
+        all_user_slots.append(user_free_slots)
+
+    # Iterate through all the hours (assuming 8 AM - 9 PM, adjust as needed)
+    hours = list(range(8, 22))  # Hours from 8 AM to 9 PM
+    
+    # For each hour, check if it's free for all users
+    for hour in hours:
+        is_free_for_all = True
+        
+        for user_slots in all_user_slots:
+            if hour not in user_slots:
+                is_free_for_all = False
+                break
+        
+        # If the hour is free for all users, add it to mutual free periods
+        if is_free_for_all:
+            mutual_free_periods.append(hour)
+    
+    # Return the mutual free periods
+    return mutual_free_periods
+
+
+
     all_busy_periods = user_busy + friend_busy
     all_busy_periods.sort(key=lambda x: x['start'])
     
@@ -255,6 +309,8 @@ def find_mutual_free_periods(user_busy, friend_busy):
         })
     
     return free_periods
+
+    '''
 
 @app.route("/logout")
 def logout():
