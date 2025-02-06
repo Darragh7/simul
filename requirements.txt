@@ -1,0 +1,7 @@
+flask==2.3.2
+flask-session==0.5.0
+google-auth==2.19.1
+google-auth-oauthlib==1.0.0
+google-api-python-client==2.86.0
+firebase-admin==6.1.0
+datetime==5.1
