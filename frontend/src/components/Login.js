@@ -1,7 +1,5 @@
 import React from "react";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-
-const clientId = "YOUR_GOOGLE_CLIENT_ID"; // Replace with your Google Client ID
+import { GoogleLogin } from "@react-oauth/google";
 
 const Login = ({ onLoginSuccess }) => {
     const handleSuccess = (response) => {
@@ -14,34 +12,31 @@ const Login = ({ onLoginSuccess }) => {
     };
 
     return (
-        <GoogleOAuthProvider clientId={clientId}>
-          <div className="login-container">
-            <h2>Login to Simul</h2>
-            <GoogleLogin onSuccess={handleSuccess} onError={handleFailure} />
+      <div className="login-container">
+      <h2>Login to Simul</h2>
+      <GoogleLogin onSuccess={handleSuccess} onError={handleFailure} />
 
-            {/* Temporary Guest Login Button */}
-            <button 
-            onClick={() => onLoginSuccess()} 
-            style={{
-                marginTop: "20px",
-                padding: "10px 20px",
-                fontSize: "16px",
-                cursor: "pointer",
-                backgroundColor: "red",
-                color: "white",
-                border: "none",
-                borderRadius: "5px"
-            }}
-            >
-            Temporary sign in button
-            </button>
+      {/* Temporary Guest Login Button */}
+      <button 
+          onClick={() => onLoginSuccess()} 
+          style={{
+              marginTop: "20px",
+              padding: "10px 20px",
+              fontSize: "16px",
+              cursor: "pointer",
+              backgroundColor: "red",
+              color: "white",
+              border: "none",
+              borderRadius: "5px"
+          }}
+      >
+          Temporary sign in button
+      </button>
+  </div>
+);
+};
 
-          </div>
-        </GoogleOAuthProvider>
-      );
-    };
-    
-    export default Login;
+export default Login;
 
 
 // Backend, verify the token with Google's API, 
