@@ -14,12 +14,15 @@ from functools import wraps
 To run this code you must have your own client secret file and service key file in the same directory as this file.
 '''
 
+# Set up the Firebase service account credentials
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "servicekey.json" #########
+
 # Initialize Firebase
-cred = credentials.Certificate('simul-3ba34-firebase-adminsdk-fbsvc-3902da270f.json')
+cred = credentials.Certificate('servicekey.json')
 firebase_admin.initialize_app(cred)
 
 # Initialize Firestore with the project ID from the service account
-db = firestore.Client(project=cred.project_id)
+#db = firestore.Client(project=cred.project_id)
 
 # Flask and OAuth setup
 app = Flask(__name__)
@@ -29,7 +32,7 @@ Session(app)
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Development only
 
-CLIENT_SECRETS_FILE = "client_secret_284638410667-qo1g3rrs79cfnb463sv6renb22h4r15p.apps.googleusercontent.com.json"     # Your client secret JSON file
+CLIENT_SECRETS_FILE = "client_secret.json"     # Your client secret JSON file ########
 SCOPES = ["https://www.googleapis.com/auth/calendar.readonly", "https://www.googleapis.com/auth/userinfo.email", "openid"]
 flow = Flow.from_client_secrets_file(
     CLIENT_SECRETS_FILE,
