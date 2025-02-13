@@ -21,7 +21,7 @@ cred = credentials.Certificate('service_key.json')
 firebase_admin.initialize_app(cred)
 
 # Initialize Firestore with the project ID from the service account
-db = firestore.Client(project=cred.project_id)
+#db = firestore.Client(project=cred.project_id)
 
 # Flask and OAuth setup
 app = Flask(__name__)
