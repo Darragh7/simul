@@ -29,7 +29,7 @@ Session(app)
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Development only
 
-CLIENT_SECRETS_FILE = "client_secret_284638410667-qo1g3rrs79cfnb463sv6renb22h4r15p.apps.googleusercontent.com.json"     # Your client secret JSON file
+CLIENT_SECRETS_FILE = "client_secret_712658023484-up5avbefkui0o4ptgt1rvtqvbv2bjq69.apps.googleusercontent.com.json"     # Your client secret JSON file
 SCOPES = ["https://www.googleapis.com/auth/calendar.readonly", "https://www.googleapis.com/auth/userinfo.email", "openid"]
 flow = Flow.from_client_secrets_file(
     CLIENT_SECRETS_FILE,
@@ -233,25 +233,18 @@ def find_free_time():
     
     return jsonify(mutual_free_times)
 
-def find_mutual_free_periods(user_busy, friend_busy):
+def find_mutual_free_periods():
     """Find mutual free periods between two users"""
-    # Aggregate all free periods mutual to all group members
+
+    """Aggregate all free periods mutual to all group members """
     mutual_free_periods = []
 
-    # Fetch List of group members from database
+    """Fetch List of group members from database"""
+    # Group ID is known because the user will press a button to find mutual free periods with their group.
+    # In other words the button will be pressed from within the specific group calender UI
     group_members = db.collection('users').where('group', '==', 'group_id').stream()
 
-    # For each user, iterate through their calender slots, adding the free period to the list of free periods
-    # .. if the slot is free among all users
-    
-    # When the free periods for each user are aggregated, find the mutual free periods between all users
-
-    # Return the mutual free periods
-
-    '''Code Dump WIP'''
-
-    '''
-
+    """For each user, iterate through their calender slots, adding the free period to the list of free periods"""
     # Initialize a list to store the availability for each member
     all_user_slots = []
 
@@ -267,9 +260,10 @@ def find_mutual_free_periods(user_busy, friend_busy):
         
         # Add the user's free slots to the list
         all_user_slots.append(user_free_slots)
-
+    
+    """When the free periods for each user are aggregated, find the mutual free periods between all users"""
     # Iterate through all the hours (assuming 8 AM - 9 PM, adjust as needed)
-    hours = list(range(8, 22))  # Hours from 8 AM to 9 PM
+    hours = list(range(8, 22))  # Hours from 8 AM to 9 PM, ARBITRARY 
     
     # For each hour, check if it's free for all users
     for hour in hours:
@@ -279,38 +273,9 @@ def find_mutual_free_periods(user_busy, friend_busy):
             if hour not in user_slots:
                 is_free_for_all = False
                 break
-        
-        # If the hour is free for all users, add it to mutual free periods
-        if is_free_for_all:
-            mutual_free_periods.append(hour)
-    
-    # Return the mutual free periods
+
+    """Return the mutual free periods"""
     return mutual_free_periods
-
-
-
-    all_busy_periods = user_busy + friend_busy
-    all_busy_periods.sort(key=lambda x: x['start'])
-    
-    # Merge overlapping busy periods
-    merged_busy = []
-    for period in all_busy_periods:
-        if not merged_busy or period['start'] > merged_busy[-1]['end']:
-            merged_busy.append(period)
-        else:
-            merged_busy[-1]['end'] = max(merged_busy[-1]['end'], period['end'])
-    
-    # Find free periods between busy periods
-    free_periods = []
-    for i in range(len(merged_busy) - 1):
-        free_periods.append({
-            'start': merged_busy[i]['end'],
-            'end': merged_busy[i + 1]['start']
-        })
-    
-    return free_periods
-
-    '''
 
 @app.route("/logout")
 def logout():

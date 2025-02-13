@@ -6,6 +6,7 @@ simul-3ba34-firebase-adminsdk-fbsvc-3902da270f.json
 
 # dependencies
 node_modules/
+flask_session/
 /.pnp
 .pnp.js
 
