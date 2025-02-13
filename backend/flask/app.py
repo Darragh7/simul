@@ -32,7 +32,7 @@ Session(app)
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Development only
 
-CLIENT_SECRETS_FILE = "client_secret.json"     # Your client secret JSON file ########
+CLIENT_SECRETS_FILE = "client_secret_localhost.json"     # Your client secret JSON file ########
 SCOPES = ["https://www.googleapis.com/auth/calendar.readonly", "https://www.googleapis.com/auth/userinfo.email", "openid"]
 flow = Flow.from_client_secrets_file(
     CLIENT_SECRETS_FILE,

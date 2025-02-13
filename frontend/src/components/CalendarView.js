@@ -1,64 +1,144 @@
-import React, { useState, useEffect } from "react";
-import { db } from "../firebase/firebase"; // Import Firestore
+import React, { useState, useEffect } from 'react';
+import { db } from "../firebase/firebase";
 import { collection, getDocs, setDoc, doc } from "firebase/firestore";
-import "./CalendarView.css";
+import './CalendarView.css';
 
-function CalendarView({ group }) {
-    // Generate time slots like "1:00 - 2:00", "2:00 - 3:00"
-    const hours = Array.from({ length: 24 }, (_, i) => `${i + 1}:00 - ${i + 2}:00`);
+const CalendarView = ({ group, user }) => {
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState(null);
     const [events, setEvents] = useState({});
+    const [eventInput, setEventInput] = useState("");
+    const [selectedSlot, setSelectedSlot] = useState(null);
 
-    // Fetch events from Firebase
+    const timeSlots = Array.from({ length: 24 }, (_, i) => `${i}:00 - ${i + 1}:00`);
+
+    // Fetch booked slots from Firestore when component mounts or group changes
     useEffect(() => {
-        if (group) {
-            const fetchEvents = async () => {
-                const eventsRef = collection(db, "calendars", group, "events");
-                const snapshot = await getDocs(eventsRef);
-                let eventData = {};
-                snapshot.forEach(doc => {
-                    eventData[doc.id] = doc.data().event;
+        if (!group) return;
+
+        const fetchEvents = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(db, `events/${group}/dates`));
+                const fetchedEvents = {};
+                querySnapshot.forEach((doc) => {
+                    fetchedEvents[doc.id] = doc.data().bookedSlots || {};
                 });
-                setEvents(eventData);
-            };
-            fetchEvents();
-        }
+                setEvents(fetchedEvents);
+            } catch (error) {
+                console.error("Error fetching events: ", error);
+            }
+        };
+
+        fetchEvents();
     }, [group]);
 
-    
-    const handleSlotClick = async (hour) => {
-        const eventName = prompt(`Add an event for ${hour}:`);
-        if (eventName) {
-            setEvents((prevEvents) => ({
-                ...prevEvents,
-                [hour]: eventName
-            }));
+    const handleDayClick = (day) => {
+        setSelectedDate(day);
+    };
 
-            // Save to Firebase
-            await setDoc(doc(db, "calendars", group, "events", hour), {
-                event: eventName
-            });
+    const handleSlotClick = (time) => {
+        setSelectedSlot(time);
+    };
+
+    const handleAddEvent = async () => {
+        if (!group || !selectedDate || !selectedSlot || eventInput.trim() === "") {
+            alert("Please select a group, date, time, and enter an event title.");
+            return;
         }
+
+        const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`;
+        const userEmail = user?.email || "anonymous";
+
+        const updatedSlots = { ...events[dateKey] } || {};
+        updatedSlots[selectedSlot] = { title: eventInput, user: userEmail };
+
+        setEvents((prev) => ({
+            ...prev,
+            [dateKey]: updatedSlots,
+        }));
+
+        try {
+            await setDoc(doc(db, `events/${group}/dates`, dateKey), {
+                bookedSlots: updatedSlots,
+            });
+            setEventInput(""); // Clear input after saving
+            setSelectedSlot(null);
+        } catch (error) {
+            console.error("Error saving event: ", error);
+        }
+    };
+
+    const changeMonth = (direction) => {
+        const newDate = new Date(currentDate);
+        newDate.setMonth(currentDate.getMonth() + direction);
+        setCurrentDate(newDate);
+        setSelectedDate(null);
     };
 
     return (
         <div className="calendar-container">
-            <h2>{group ? `${group}'s Calendar` : "Select a Group"}</h2>
-            <div className="calendar-grid">
-                {hours.map((hour) => (
-                    <button 
-                        key={hour} 
-                        className={`time-slot ${events[hour] ? "booked" : "free"}`} 
-                        onClick={() => handleSlotClick(hour)}
-                    >
-                        {hour} {events[hour] ? `- ${events[hour]}` : "(Free)"}
-                    </button>
-                ))}
+            <div className="calendar-header">
+                <button className="arrow-btn" onClick={() => changeMonth(-1)}>◀</button>
+                <h2>{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })} - {group || "No Group Selected"}</h2>
+                <button className="arrow-btn" onClick={() => changeMonth(1)}>▶</button>
+                {group && <button className="find-free-time-btn">Find Free Time</button>}
             </div>
+
+            {!selectedDate && (
+                <div className="month-view">
+                    <div className="weekdays">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                            <div key={day} className="weekday">{day}</div>
+                        ))}
+                    </div>
+                    <div className="days-grid">
+                        {Array.from({ length: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay() }, (_, i) => (
+                            <div key={`empty-${i}`} className="empty-day"></div>
+                        ))}
+                        {Array.from({ length: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate() }, (_, i) => (
+                            <div key={i} className="day" onClick={() => handleDayClick(i + 1)}>
+                                {i + 1}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {selectedDate && (
+                <div className="day-view">
+                    <h3>{currentDate.toLocaleString('default', { month: 'long' })} {selectedDate}</h3>
+                    <button className="back-btn" onClick={() => setSelectedDate(null)}>⬅ Back</button>
+
+                    <div className="hourly-grid">
+                        {timeSlots.map((slot, index) => (
+                            <div 
+                                key={index} 
+                                className={`hour-slot ${events[`${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`]?.[slot] ? 'booked' : ''}`} 
+                                onClick={() => handleSlotClick(slot)}
+                            >
+                                {slot} {events[`${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`]?.[slot]?.title || ""}
+                            </div>
+                        ))}
+                    </div>
+
+                    {selectedSlot && (
+                        <div className="event-input-container">
+                            <h4>Adding Event for {selectedSlot}</h4>
+                            <input 
+                                type="text" 
+                                placeholder="Event title..." 
+                                value={eventInput} 
+                                onChange={(e) => setEventInput(e.target.value)}
+                            />
+                            <button onClick={handleAddEvent}>Add Event</button>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
-}
-
-
+};
 
 export default CalendarView;
+
 
