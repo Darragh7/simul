@@ -121,6 +121,7 @@ const CalendarView = ({ group, user }) => {
                             <div key={day} className="weekday">{day}</div>
                         ))}
                     </div>
+                    {/* Make the days grid scrollable */}
                     <div className="days-grid">
                         {Array.from({ length: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay() }, (_, i) => (
                             <div key={`empty-${i}`} className="empty-day"></div>
@@ -139,6 +140,7 @@ const CalendarView = ({ group, user }) => {
                     <h3>{currentDate.toLocaleString('default', { month: 'long' })} {selectedDate}</h3>
                     <button className="back-btn" onClick={() => setSelectedDate(null)}>⬅ Back</button>
 
+                    {/* Make the hourly grid scrollable */}
                     <div className="hourly-grid">
                         {timeSlots.map((slot, index) => (
                             <div 

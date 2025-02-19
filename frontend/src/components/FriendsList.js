@@ -54,15 +54,18 @@ const FriendsList = () => {
                     placeholder="Enter friend's email"
                     value={friendEmail}
                     onChange={(e) => setFriendEmail(e.target.value)}
+                    className="friend-email-input"
                 />
-                <button onClick={handleAddFriend}>Add Friend</button>
+                <button onClick={handleAddFriend} className="add-friend-btn">Add Friend</button>
             </div>
 
             {/* Friends List */}
             <ul className="friends-list">
                 {friends.length > 0 ? (
                     friends.map((friend, index) => (
-                        <li key={index}>{friend}</li>
+                        <li key={index} className="friend-item">
+                            <span>{friend}</span>
+                        </li>
                     ))
                 ) : (
                     <p>No friends yet.</p>
@@ -73,4 +76,3 @@ const FriendsList = () => {
 };
 
 export default FriendsList;
-

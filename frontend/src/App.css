@@ -1,14 +1,16 @@
 /* General Layout */
+/*
 .app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
 }
-
+*/
 /* Header */
+/*
 .header {
-  position: relative; /* Add this */
-  background-color: #23395B; /* Delft Blue */
+  position: relative; 
+  background-color: #23395B; 
   color: white;
   text-align: center;
   height: 5rem;
@@ -16,75 +18,83 @@
   font-size: 2rem;
   font-weight: bold;
 }
-
+*/
 
 /* Main Layout */
+/*
 .main-container {
   display: flex;
   flex: 1;
 }
-
+*/
 /* Left Sidebar */
+/*
 .left-sidebar {
   width: 20%;
-  background-color: #161925; /* Dark Raisin Black */
+  background-color: #161925; 
   padding: 1rem;
-  border-right: 1px solid #8EA8C3; /* Powder Blue */
+  border-right: 1px solid #8EA8C3; 
 }
-
+*/
 /* Group Button */
+/*
 .group-button {
   width: 100%;
   padding: 0.5rem;
   margin: 0.3rem 0;
   border: none;
-  background-color: #406E8E; /* UCLA Blue */
+  background-color: #406E8E; 
   cursor: pointer;
   font-size: 1rem;
   color: white;
 }
-
+*/
+/*
 .group-button:hover {
-  background-color: #8EA8C3; /* Powder Blue */
-  color: #161925; /* Dark Raisin Black */
+  background-color: #8EA8C3; 
+  color: #161925;
 }
-
+*/
 /* Center Panel */
+/*
 .center-panel {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #8EA8C3; /* Powder Blue */
+  background-color: #8EA8C3;
 }
-
+*/
 /* Right Sidebar */
+/*
 .right-sidebar {
   width: 10%;
-  background-color: #406E8E; /* UCLA Blue */
+  background-color: #406E8E; 
   padding: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-left: 1px solid #23395B; /* Delft Blue */
+  border-left: 1px solid #23395B;
 }
-
+*/
 /* Buttons in Right Sidebar */
+/*
 .right-sidebar button {
   font-size: 2rem;
   background: none;
   border: none;
   cursor: pointer;
   margin: 10px;
-  color: #161925; /* Dark Raisin Black */
+  color: #161925;
 }
-
+*/
 /* Panel Content */
+/*
 .panel-content {
   text-align: center;
   font-size: 1.5rem;
   width: 100%;
-  color: #23395B; /* Delft Blue */
+  color: #23395B;
 }
 
 .group-item {
@@ -123,7 +133,7 @@
   border-radius: 5px;
   cursor: pointer;
   border: 2px solid yellow;
-  z-index: 10; /* Make sure it's on top of other elements */
+  z-index: 10; 
 }
 
 
@@ -159,4 +169,761 @@
 
 .month-option:hover {
   background-color: #f0f0f0;
+} */
+
+/* General Layout */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Header */
+.header {
+  position: relative;
+  background: linear-gradient(135deg, #23395B, #406E8E);
+  color: white;
+  text-align: center;
+  height: 5rem;
+  line-height: 5rem;
+  font-size: 3rem;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Main Layout */
+.main-container {
+  display: flex;
+  flex: 1;
+  background: #f0f4f8;
+}
+
+/* Left Sidebar */
+.left-sidebar {
+  width: 20%;
+  background-color: #161925;
+  padding: 1rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 4px 0 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(180deg, #161925, #23395B);
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+
+}
+
+/* Group Button and Items */
+.group-button {
+  width: 100%;
+  padding: 0.5rem;
+  margin: 0.3rem 0;
+  border: none;
+  background-color: #406E8E;
+  cursor: pointer;
+  font-size: 1rem;
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+/* Groups Heading */
+.left-sidebar h3 {
+  color: white;
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.group-button:hover {
+  background-color: #8EA8C3;
+  color: #161925;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+.group-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.group-button {
+  flex-grow: 1;
+  margin-right: 5px;
+}
+
+.delete-button {
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px;
+}
+
+.delete-button:hover {
+  color: darkred;
+}
+
+/* Center Panel */
+.center-panel {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #8EA8C3;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 1rem;
+}
+
+/* Right Sidebar */
+.right-sidebar {
+  width: 10%;
+  background-color: #406E8E;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-left: 1px solid #23395B;
+  box-shadow: -4px 0 8px rgba(0, 0, 0, 0.1);
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+.right-sidebar button {
+  font-size: 2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin: 10px;
+  color: #161925;
+  transition: all 0.2s;
+}
+
+.right-sidebar button:hover {
+  color: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Panel Content */
+.panel-content {
+  text-align: center;
+  font-size: 1.5rem;
+  width: 100%;
+  color: #23395B;
+}
+
+/* Logout Button */
+.logout-button {
+  position: absolute;
+  top: 21px;
+  left: 110px;
+  background: linear-gradient(135deg, #211876, #4f40a1);
+  color: white;
+  border: none;
+  padding: 12px 12px;
+  font-size: 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.logout-button:hover {
+  background: linear-gradient(135deg, #FF4F50, #FF8C79);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Calendar Container */
+
+.calendar-container {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin: 1rem;
+  width: 100%;
+  max-width: 1200px;
+  background: linear-gradient(180deg, #fff, #f0f4f8);
+  overflow-y: auto; /* 88*/
+  max-height: 90vh; /* 88 */
+}
+
+/* Calendar Header */
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #8EA8C3;
+}
+
+.calendar-header h2 {
+  color: #23395B;
+  font-size: 1.5rem;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.calendar-header h2:hover {
+  background-color: #f0f4f8;
+  cursor: pointer;
+}
+
+
+.arrow-btn {
+  background-color: #406E8E;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrow-btn:hover {
+  background-color: #23395B;
+  transform: scale(1.1);
+}
+
+.find-free-time-btn {
+  background-color: #406E8E;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.find-free-time-btn:hover {
+  background-color: #23395B;
+}
+
+/* Month Dropdown */
+.month-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.month-dropdown {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  border: 1px solid #8EA8C3;
+  border-radius: 8px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  width: 220px;
+}
+
+.month-option {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #23395B;
+}
+
+.month-option:hover {
+  background-color: #f0f4f8;
+  color: #406E8E;
+}
+
+/* Calendar Grid */
+.month-view {
+  background-color: white;
+  border-radius: 8px;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background-color: #f0f4f8;
+  padding: 0.5rem;
+  border-radius: 8px 8px 0 0;
+}
+
+.weekday {
+  text-align: center;
+  font-weight: bold;
+  color: #23395B;
+  padding: 0.5rem;
+}
+
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background-color: #f0f4f8;
+  padding: 0.5rem;
+  border-radius: 0 0 8px 8px;
+}
+
+.day, .empty-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.day {
+  cursor: pointer;
+  color: #23395B;
+}
+
+.day:hover {
+  background-color: #8EA8C3;
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Day View */
+.day-view {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.day-view h3 {
+  color: #23395B;
+  margin-bottom: 1rem;
+}
+
+.back-btn {
+  background-color: #406E8E;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.back-btn:hover {
+  background-color: #23395B;
+}
+
+/* Hourly Grid */
+.hourly-grid {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.hour-slot {
+  background-color: #f0f4f8;
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #23395B;
+}
+
+.hour-slot:hover {
+  background-color: #8EA8C3;
+  color: white;
+  transform: scale(1.05);
+}
+
+.hour-slot.booked {
+  background-color: #406E8E;
+  color: white;
+}
+
+/* Event Input */
+.event-input-container {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f0f4f8;
+  border-radius: 8px;
+}
+
+.event-input-container h4 {
+  color: #23395B;
+  margin-bottom: 0.5rem;
+}
+
+.event-input-container input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #8EA8C3;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.event-input-container input:focus {
+  outline: none;
+  border-color: #406E8E;
+  box-shadow: 0 0 0 2px rgba(64, 110, 142, 0.2);
+}
+
+.event-input-container button {
+  background-color: #406E8E;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.event-input-container button:hover {
+  background-color: #23395B;
+}
+
+/* Scrollbar Styling */
+.month-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.month-dropdown::-webkit-scrollbar-track {
+  background: #f0f4f8;
+  border-radius: 4px;
+}
+
+.month-dropdown::-webkit-scrollbar-thumb {
+  background: #8EA8C3;
+  border-radius: 4px;
+}
+
+.month-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #406E8E;
+}
+
+/* Media Queries for Responsiveness */
+@media screen and (max-width: 768px) {
+  .left-sidebar {
+    width: 30%;
+  }
+  
+  .right-sidebar {
+    width: 15%;
+  }
+  
+  .calendar-container {
+    margin: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .calendar-header h2 {
+    font-size: 1.2rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .left-sidebar {
+    width: 40%;
+  }
+  
+  .right-sidebar {
+    width: 20%;
+  }
+  
+  .calendar-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .month-dropdown {
+    width: 180px;
+  }
+}
+
+/* Friends List Container */
+.friends-container {
+  background: linear-gradient(145deg, #f0f4f8, #ffffff);
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 1rem;
+  max-width: 500px;
+  width: 100%;
+}
+
+/* Header */
+.friends-container h2 {
+  font-size: 1.75rem;
+  color: #23395B;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* Add Friend Section */
+.add-friend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.friend-email-input {
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #8EA8C3;
+  font-size: 1rem;
+  background-color: #f0f4f8;
+  transition: all 0.3s ease;
+}
+
+.friend-email-input:focus {
+  outline: none;
+  border-color: #406E8E;
+  box-shadow: 0 0 0 2px rgba(64, 110, 142, 0.2);
+}
+
+.add-friend-btn {
+  padding: 0.75rem;
+  border: none;
+  background-color: #406E8E;
+  color: white;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-friend-btn:hover {
+  background-color: #23395B;
+}
+
+/* Friends List */
+.friends-list {
+  list-style: none;
+  padding: 0;
+}
+
+.friend-item {
+  background: #fff;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  border-radius: 8px;
+  border: 1px solid #8EA8C3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.friend-item:hover {
+  background-color: #f0f4f8;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.friend-item span {
+  font-size: 1.2rem;
+  color: #23395B;
+}
+
+
+/* Panel Content */
+.panel-content {
+  background: linear-gradient(145deg, #f0f4f8, #ffffff);
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 1rem;
+  max-width: 600px;
+  width: 100%;
+}
+
+/* Header */
+.panel-content h2 {
+  font-size: 1.75rem;
+  color: #23395B;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* Paragraph */
+.panel-content p {
+  text-align: center;
+  color: #6c7d95;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Notification List */
+.notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Notification Item */
+.notification-item {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #8EA8C3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background-color: #f0f4f8;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Notification Title */
+.notification-title {
+  font-size: 1.1rem;
+  color: #23395B;
+  font-weight: bold;
+}
+
+/* Notification Time */
+.notification-time {
+  font-size: 0.85rem;
+  color: #6c7d95;
+}
+
+/* Panel Content */
+.panel-content {
+  background: linear-gradient(145deg, #f0f4f8, #ffffff);
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 1rem;
+  max-width: 600px;
+  width: 100%;
+}
+
+/* Header */
+.panel-content h2 {
+  font-size: 1.75rem;
+  color: #23395B;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* Group Name Input */
+.panel-content input {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: 1px solid #8EA8C3;
+  font-size: 1rem;
+}
+
+/* Friends List Container */
+.friends-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+/* Friend Box */
+.friend-box {
+  background-color: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #8EA8C3;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.friend-box:hover {
+  background-color: #f0f4f8;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Selected Friend Box */
+.friend-box.selected {
+  background-color: #56C1B1;
+  color: #fff;
+  border-color: #4A9A89;
+}
+
+/* Create Button */
+.panel-content button {
+  padding: 0.75rem 1.5rem;
+  background-color: #56C1B1;
+  color: white;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.panel-content button:disabled {
+  background-color: #C4D8D1;
+  cursor: not-allowed;
+}
+
+.panel-content button:hover:not(:disabled) {
+  background-color: #4A9A89;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f0f0f0; /* Light background color for the scrollbar track */
+  border-radius: 12px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #073467; /* Match the color scheme with a blue thumb */
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0e427a; /* Darker blue when hovering over the thumb */
+}
+
+/* For horizontal scrolling */
+::-webkit-scrollbar-horizontal {
+  height: 8px;
+}
+
+::-webkit-scrollbar-track-horizontal {
+  background: #f0f0f0;
+}
+
+::-webkit-scrollbar-thumb-horizontal {
+  background: #007bff;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb-horizontal:hover {
+  background: #0056b3;
 }
