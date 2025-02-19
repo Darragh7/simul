@@ -4,11 +4,14 @@ import CalendarView from './components/CalendarView';
 import CreateGroup from './components/CreateGroup';
 import Inbox from './components/Inbox';
 import FriendsList from './components/FriendsList';
+import { useAuth } from './components/AuthContext'; // Make sure your AuthContext is correctly set up
 
 function App() {
     const [activePanel, setActivePanel] = useState('calendar'); 
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [groups, setGroups] = useState(["Work", "Friends", "Family"]);
+
+    const { logout } = useAuth(); // Get the logout function from the AuthContext
 
     // Add a new group
     const handleCreateGroup = (groupName) => {
@@ -24,14 +27,17 @@ function App() {
         setGroups((prevGroups) => prevGroups.filter((group) => group !== groupName));
         if (selectedGroup === groupName) {
             setSelectedGroup(null);
-            setActivePanel('calendar'); // Optional: Set to another default panel
+            setActivePanel('calendar'); 
         }
     };
 
     return (
         <div className="app-container">
             {/* Header */}
-            <header className="header">Simul</header>
+            <header className="header">
+                Simul
+                <button className="logout-button" onClick={logout}>Logout</button>
+            </header>
 
             <div className="main-container">
                 {/* Left Sidebar - Groups */}

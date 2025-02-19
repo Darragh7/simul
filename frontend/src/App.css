@@ -7,6 +7,7 @@
 
 /* Header */
 .header {
+  position: relative; /* Add this */
   background-color: #23395B; /* Delft Blue */
   color: white;
   text-align: center;
@@ -15,6 +16,7 @@
   font-size: 2rem;
   font-weight: bold;
 }
+
 
 /* Main Layout */
 .main-container {
@@ -107,4 +109,54 @@
 
 .delete-button:hover {
   color: darkred;
+}
+
+.logout-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: red;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 2px solid yellow;
+  z-index: 10; /* Make sure it's on top of other elements */
+}
+
+
+.logout-button:hover {
+  background: darkred;
+}
+
+.month-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.month-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  width: 200px;
+}
+
+.month-option {
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.month-option:hover {
+  background-color: #f0f0f0;
 }
