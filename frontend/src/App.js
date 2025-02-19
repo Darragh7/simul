@@ -97,6 +97,8 @@ function App() {
                     <button onClick={() => setActivePanel('create-group')}>➕</button>
                     <button onClick={() => setActivePanel('inbox')}>💬</button>
                     <button onClick={() => setActivePanel('friends-list')}>👥</button> {/* Group icon for friends list */}
+                    <button onClick={() => setIsLoggedIn(false)}>🚪 Logout</button> {/* Logout Button */}
+
                 </aside>
             </div>
         </div>
