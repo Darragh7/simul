@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { GoogleOAuthProvider } from '@react-oauth/google';
+// import { GoogleOAuthProvider } from '@react-oauth/google';
 import './App.css';
 import CalendarView from './components/CalendarView';
 import CreateGroup from './components/CreateGroup';
@@ -7,7 +7,7 @@ import Inbox from './components/Inbox';
 import FriendsList from './components/FriendsList';
 import Login from "./components/Login";
 
-const clientId = "712658023484-up5avbefkui0o4ptgt1rvtqvbv2bjq69.apps.googleusercontent.com"; // Replace with your actual client ID
+// const clientId = "712658023484-up5avbefkui0o4ptgt1rvtqvbv2bjq69.apps.googleusercontent.com"; // Replace with your actual client ID
 
 function App() {
     const [activePanel, setActivePanel] = useState('calendar'); 
@@ -15,13 +15,13 @@ function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     // If user is not logged in, show the login page
-    if (!isLoggedIn) {
-        return (
-            <GoogleOAuthProvider clientId={clientId}>
-                <Login onLoginSuccess={() => setIsLoggedIn(true)} />
-            </GoogleOAuthProvider>
-        );
-    }
+    // if (!isLoggedIn) {
+    //     return (
+    //         <GoogleOAuthProvider clientId={clientId}>
+    //             <Login onLoginSuccess={() => setIsLoggedIn(true)} />
+    //         </GoogleOAuthProvider>
+    //     );
+    // }
 
     const groups = ["Work", "Friends", "Family"];
 
