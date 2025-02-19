@@ -1,53 +1,48 @@
 import os
 import json
 from datetime import datetime, timedelta
-from flask import Flask, redirect, url_for, session, request, jsonify
-from flask_session import Session
+from flask import Flask, redirect, url_for, request, jsonify
+from flask_cors import CORS
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 import firebase_admin
 from firebase_admin import credentials, firestore
 from functools import wraps
-
-'''
-To run this code you must have your own client secret file and service key file in the same directory as this file.
-'''
+from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
+import secrets
 
 # Set up the Firebase service account credentials
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "servicekey.json" #########
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "simul-3ba34-firebase-adminsdk-fbsvc-3902da270f.json"
 
 # Initialize Firebase
-cred = credentials.Certificate('servicekey.json')
+cred = credentials.Certificate("simul-3ba34-firebase-adminsdk-fbsvc-3902da270f.json")
 firebase_admin.initialize_app(cred)
 
 # Initialize Firestore with the project ID from the service account
-#db = firestore.Client(project=cred.project_id)
+db = firestore.Client(project=cred.project_id)
 
-# Flask and OAuth setup
+# Flask and JWT setup
 app = Flask(__name__)
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
-Session(app)
+app.config["JWT_SECRET_KEY"] = secrets.token_hex(32)
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+jwt = JWTManager(app)
+
+# CORS setup
+CORS(app,
+     supports_credentials=True,
+     origins=["http://localhost:3000"])
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # Development only
 
-CLIENT_SECRETS_FILE = "client_secret_712658023484-up5avbefkui0o4ptgt1rvtqvbv2bjq69.apps.googleusercontent.com.json"     # Your client secret JSON file
+# Google OAuth setup
+CLIENT_SECRETS_FILE = "client_secret_712658023484-up5avbefkui0o4ptgt1rvtqvbv2bjq69.apps.googleusercontent.com.json"
 SCOPES = ["https://www.googleapis.com/auth/calendar.readonly", "https://www.googleapis.com/auth/userinfo.email", "openid"]
 flow = Flow.from_client_secrets_file(
     CLIENT_SECRETS_FILE,
     scopes=SCOPES,
     redirect_uri="http://127.0.0.1:5000/callback"
 )
-
-# Authentication decorator
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if "credentials" not in session:
-            return redirect(url_for("login"))
-        return f(*args, **kwargs)
-    return decorated_function
 
 @app.route("/")
 def home():
@@ -56,26 +51,37 @@ def home():
 @app.route("/login")
 def login():
     auth_url, state = flow.authorization_url(access_type="offline", include_granted_scopes="true")
-    session["state"] = state
     return redirect(auth_url)
 
 @app.route("/callback")
 def callback():
-    
     flow.fetch_token(authorization_response=request.url)
     credentials = flow.credentials
-    session["credentials"] = credentials_to_dict(credentials)
     
     # Get user info and store in Firebase
     service = build("oauth2", "v2", credentials=credentials)
     user_info = service.userinfo().get().execute()
     user_email = user_info["email"]
-    session["user_email"] = user_email
     
     # Store user data in Firebase
     store_user_calendar_data(user_email, credentials)
     
-    return redirect(url_for("dashboard"))
+    # Create JWT token
+    access_token = create_access_token(identity={
+        'email': user_email,
+        'credentials': credentials_to_dict(credentials)
+    })
+    
+    return redirect(f"http://localhost:3000?token={access_token}")
+
+@app.route("/api/auth/verify")
+@jwt_required()
+def verify_token():
+    current_user = get_jwt_identity()
+    return jsonify({
+        "isAuthenticated": True,
+        "user": current_user
+    })
 
 def store_user_calendar_data(user_email, credentials):
     """Store user's calendar data in Firebase"""
@@ -98,7 +104,7 @@ def store_user_calendar_data(user_email, credentials):
     # Convert events to free/busy periods
     busy_periods = []
     for event in events:
-        if 'dateTime' in event['start']:  # Only process events with specific times
+        if 'dateTime' in event['start']:
             start = event['start']['dateTime']
             end = event['end']['dateTime']
             busy_periods.append({
@@ -114,35 +120,11 @@ def store_user_calendar_data(user_email, credentials):
         'busy_periods': busy_periods
     }, merge=True)
 
-@app.route("/dashboard")
-@login_required
-def dashboard():
-    user_email = session.get("user_email")
-    user_ref = db.collection('users').document(user_email)
-    user_data = user_ref.get().to_dict()
-    
-    return f"""
-    <h1>Welcome {user_email}</h1>
-    <h2>Add Friend</h2>
-    <form action="/add_friend" method="POST">
-        <input type="email" name="friend_email" placeholder="Friend's email">
-        <button type="submit">Add Friend</button>
-    </form>
-    <h2>Find Mutual Free Time</h2>
-    <form action="/find_free_time" method="POST">
-        <input type="email" name="friend_email" placeholder="Friend's email">
-        <button type="submit">Find Free Time</button>
-    </form>
-    <h2>Calendar Events</h2>
-    <a href="/list_events"><button type="button">View Calendar Events</button></a>
-    <br><br>
-    <a href="/logout">Logout</a>
-    """
-    
 @app.route("/list_events")
-@login_required
+@jwt_required()
 def list_events():
-    credentials = Credentials(**session["credentials"])
+    current_user = get_jwt_identity()
+    credentials = Credentials(**current_user['credentials'])
     service = build("calendar", "v3", credentials=credentials)
     
     # Get events for next 30 days
@@ -158,9 +140,8 @@ def list_events():
     ).execute()
     
     events = events_result.get('items', [])
-    
-    # Format events for display
     formatted_events = []
+    
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         end = event['end'].get('dateTime', event['end'].get('date'))
@@ -171,38 +152,19 @@ def list_events():
             'description': event.get('description', '')
         })
     
-    # Create HTML display
-    events_html = "<h1>Your Calendar Events</h1>"
-    events_html += "<a href='/dashboard'>Back to Dashboard</a><br><br>"
-    
-    if not formatted_events:
-        events_html += "<p>No upcoming events found.</p>"
-    else:
-        events_html += "<ul>"
-        for event in formatted_events:
-            events_html += f"""
-                <li>
-                    <strong>{event['summary']}</strong><br>
-                    Start: {event['start']}<br>
-                    End: {event['end']}<br>
-                    {event['description'] if event['description'] else ''}
-                </li>
-                <br>
-            """
-        events_html += "</ul>"
-    
-    return events_html
+    return jsonify(formatted_events)
 
 @app.route("/add_friend", methods=["POST"])
-@login_required
+@jwt_required()
 def add_friend():
-    user_email = session.get("user_email")
-    friend_email = request.form.get("friend_email")
+    current_user = get_jwt_identity()
+    user_email = current_user['email']
+    friend_email = request.json.get("friend_email")
     
     # Check if friend exists in system
     friend_ref = db.collection('users').document(friend_email)
     if not friend_ref.get().exists:
-        return "Friend not found in system"
+        return jsonify({"error": "Friend not found in system"}), 404
     
     # Add to friends list
     user_ref = db.collection('users').document(user_email)
@@ -210,15 +172,15 @@ def add_friend():
         'friends': firestore.ArrayUnion([friend_email])
     })
     
-    return redirect(url_for("dashboard"))
+    return jsonify({"message": "Friend added successfully"})
 
 @app.route("/find_free_time", methods=["POST"])
-@login_required
+@jwt_required()
 def find_free_time():
-    user_email = session.get("user_email")
-    friend_email = request.form.get("friend_email")
+    current_user = get_jwt_identity()
+    user_email = current_user['email']
+    friend_email = request.json.get("friend_email")
     
-    # Get both users' busy periods
     user_ref = db.collection('users').document(user_email)
     friend_ref = db.collection('users').document(friend_email)
     
@@ -226,9 +188,8 @@ def find_free_time():
     friend_data = friend_ref.get().to_dict()
     
     if not friend_data:
-        return "Friend not found"
+        return jsonify({"error": "Friend not found"}), 404
     
-    # Find mutual free periods
     mutual_free_times = find_mutual_free_periods(
         user_data.get('busy_periods', []),
         friend_data.get('busy_periods', [])
@@ -241,7 +202,6 @@ def find_mutual_free_periods(user_busy, friend_busy):
     all_busy_periods = user_busy + friend_busy
     all_busy_periods.sort(key=lambda x: x['start'])
     
-    # Merge overlapping busy periods
     merged_busy = []
     for period in all_busy_periods:
         if not merged_busy or period['start'] > merged_busy[-1]['end']:
@@ -249,7 +209,6 @@ def find_mutual_free_periods(user_busy, friend_busy):
         else:
             merged_busy[-1]['end'] = max(merged_busy[-1]['end'], period['end'])
     
-    # Find free periods between busy periods
     free_periods = []
     for i in range(len(merged_busy) - 1):
         free_periods.append({
@@ -261,8 +220,7 @@ def find_mutual_free_periods(user_busy, friend_busy):
 
 @app.route("/logout")
 def logout():
-    session.clear()
-    return redirect(url_for("home"))
+    return jsonify({"message": "Logged out successfully"}), 200
 
 def credentials_to_dict(credentials):
     return {

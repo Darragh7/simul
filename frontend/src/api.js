@@ -18,3 +18,28 @@ export async function addFriend(email, nickname) {
     });
     return response.json();
 }
+
+const makeAuthenticatedRequest = async (url, options = {}) => {
+const token = localStorage.getItem('token');
+
+const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    ...options.headers
+};
+
+const response = await fetch(url, {
+    ...options,
+    headers
+});
+
+if (response.status === 401) {
+    localStorage.removeItem('token');
+    window.location.reload();
+    return;
+}
+
+return response;
+};
+
+export { makeAuthenticatedRequest };
