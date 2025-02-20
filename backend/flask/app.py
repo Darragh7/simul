@@ -7,7 +7,7 @@ from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, auth
 from functools import wraps
 
 '''
@@ -39,6 +39,26 @@ flow = Flow.from_client_secrets_file(
     scopes=SCOPES,
     redirect_uri="http://127.0.0.1:5000/callback"
 )
+
+#####LOGIN#######
+def verify_token(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers['Authorization'].split(' ')[1]
+        
+        if not token:
+            return jsonify({'message': 'Token is missing'}), 401
+        
+        try:
+            decoded_token = auth.verify_id_token(token)
+            request.user = decoded_token
+        except:
+            return jsonify({'message': 'Invalid token'}), 401
+            
+        return f(*args, **kwargs)
+    return decorated_function
 
 # Authentication decorator
 def login_required(f):

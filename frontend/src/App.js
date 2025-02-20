@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
+import Login from './components/Login';
 import CalendarView from './components/CalendarView';
 import CreateGroup from './components/CreateGroup';
 import Inbox from './components/Inbox';
@@ -11,7 +12,13 @@ function App() {
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [groups, setGroups] = useState(["Work", "Friends", "Family"]);
 
-    const { logout } = useAuth(); // Get the logout function from the AuthContext
+    const { user, logout } = useAuth(); // Get the logout function from the AuthContext
+
+    // If no user is logged in, show the Login component
+    if (!user) {
+        return <Login />; }
+
+
 
     // Add a new group
     const handleCreateGroup = (groupName) => {
