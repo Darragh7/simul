@@ -52,10 +52,17 @@ const CalendarView = ({ group, user }) => {
         }
 
         const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`;
-        const userEmail = user?.email || "anonymous";
-
+        
+        // Use user email from the props or display name if available
+        const userIdentifier = user?.email || user?.displayName || "anonymous";
+        
         const updatedSlots = { ...events[dateKey] } || {};
-        updatedSlots[selectedSlot] = { title: eventInput, user: userEmail };
+        updatedSlots[selectedSlot] = { 
+            title: eventInput, 
+            user: userIdentifier,
+            userId: user?.uid || "unknown", // Store the user ID for additional reference
+            createdAt: new Date().toISOString() // Add timestamp
+        };
 
         setEvents((prev) => ({
             ...prev,
@@ -86,6 +93,12 @@ const CalendarView = ({ group, user }) => {
         newDate.setMonth(currentDate.getMonth() + direction);
         setCurrentDate(newDate);
         setSelectedDate(null);
+    };
+
+    // Format the display of the event including the creator's info
+    const formatEventDisplay = (event) => {
+        if (!event) return "";
+        return `${event.title} (by ${event.user})`;
     };
 
     return (
@@ -142,15 +155,26 @@ const CalendarView = ({ group, user }) => {
 
                     {/* Make the hourly grid scrollable */}
                     <div className="hourly-grid">
-                        {timeSlots.map((slot, index) => (
-                            <div 
-                                key={index} 
-                                className={`hour-slot ${events[`${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`]?.[slot] ? 'booked' : ''}`} 
-                                onClick={() => handleSlotClick(slot)}
-                            >
-                                {slot} {events[`${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`]?.[slot]?.title || ""}
-                            </div>
-                        ))}
+                        {timeSlots.map((slot, index) => {
+                            const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`;
+                            const event = events[dateKey]?.[slot];
+                            
+                            return (
+                                <div 
+                                    key={index} 
+                                    className={`hour-slot ${event ? 'booked' : ''}`} 
+                                    onClick={() => handleSlotClick(slot)}
+                                >
+                                    <div className="slot-time">{slot}</div>
+                                    {event && (
+                                        <div className="event-details">
+                                            <div className="event-title">{event.title}</div>
+                                            <div className="event-creator">Created by: {event.user}</div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
 
                     {selectedSlot && (
