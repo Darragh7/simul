@@ -315,6 +315,21 @@
   color: #23395B;
 }
 
+.user-info {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 5px 8px; /* Reduced padding */
+  border-radius: 15px;
+  color: white;
+  font-weight: normal;
+  line-height: 1; /* Prevent extra vertical spacing */
+  display: inline-block; /* Shrinks the box to fit the text */
+}
+
 /* Logout Button */
 .logout-button {
   position: absolute;
