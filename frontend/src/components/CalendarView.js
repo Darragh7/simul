@@ -9,8 +9,13 @@ const CalendarView = ({ group, user }) => {
     const [events, setEvents] = useState({});
     const [eventInput, setEventInput] = useState("");
     const [selectedSlot, setSelectedSlot] = useState(null);
+    const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
 
     const timeSlots = Array.from({ length: 24 }, (_, i) => `${i}:00 - ${i + 1}:00`);
+    const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
 
     // Fetch booked slots from Firestore when component mounts or group changes
     useEffect(() => {
@@ -68,6 +73,14 @@ const CalendarView = ({ group, user }) => {
         }
     };
 
+    const handleMonthSelect = (monthIndex) => {
+        const newDate = new Date(currentDate);
+        newDate.setMonth(monthIndex);
+        setCurrentDate(newDate);
+        setSelectedDate(null);
+        setIsMonthDropdownOpen(false);
+    };
+
     const changeMonth = (direction) => {
         const newDate = new Date(currentDate);
         newDate.setMonth(currentDate.getMonth() + direction);
@@ -79,7 +92,24 @@ const CalendarView = ({ group, user }) => {
         <div className="calendar-container">
             <div className="calendar-header">
                 <button className="arrow-btn" onClick={() => changeMonth(-1)}>◀</button>
-                <h2>{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })} - {group || "No Group Selected"}</h2>
+                <div className="month-dropdown-container">
+                    <h2 onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)} style={{ cursor: 'pointer' }}>
+                        {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })} - {group || "No Group Selected"} ▼
+                    </h2>
+                    {isMonthDropdownOpen && (
+                        <div className="month-dropdown">
+                            {months.map((month, index) => (
+                                <div
+                                    key={month}
+                                    className="month-option"
+                                    onClick={() => handleMonthSelect(index)}
+                                >
+                                    {month} {currentDate.getFullYear()}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
                 <button className="arrow-btn" onClick={() => changeMonth(1)}>▶</button>
                 {group && <button className="find-free-time-btn">Find Free Time</button>}
             </div>
@@ -91,6 +121,7 @@ const CalendarView = ({ group, user }) => {
                             <div key={day} className="weekday">{day}</div>
                         ))}
                     </div>
+                    {/* Make the days grid scrollable */}
                     <div className="days-grid">
                         {Array.from({ length: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay() }, (_, i) => (
                             <div key={`empty-${i}`} className="empty-day"></div>
@@ -109,6 +140,7 @@ const CalendarView = ({ group, user }) => {
                     <h3>{currentDate.toLocaleString('default', { month: 'long' })} {selectedDate}</h3>
                     <button className="back-btn" onClick={() => setSelectedDate(null)}>⬅ Back</button>
 
+                    {/* Make the hourly grid scrollable */}
                     <div className="hourly-grid">
                         {timeSlots.map((slot, index) => (
                             <div 
@@ -140,5 +172,3 @@ const CalendarView = ({ group, user }) => {
 };
 
 export default CalendarView;
-
-
