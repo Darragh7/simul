@@ -200,7 +200,7 @@
 
 /* Left Sidebar */
 .left-sidebar {
-  width: 20%;
+  width: 15%;
   background-color: #161925;
   padding: 1rem;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
@@ -208,22 +208,40 @@
   background: linear-gradient(180deg, #161925, #23395B);
   border-top-right-radius: 12px;
   border-bottom-right-radius: 12px;
-
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-
+.left-sidebar ul {
+  width: 100%;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center group items */
+}
 /* Group Button and Items */
 .group-button {
-  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Space out text and delete icon */
+  width: 80%;
   padding: 0.5rem;
-  margin: 0.3rem 0;
+  margin: 0.3rem auto;
   border: none;
-  background-color: #406E8E;
+  background: linear-gradient(135deg, #23395B, #406E8E);
+  color: white;
   cursor: pointer;
   font-size: 1rem;
-  color: white;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
+  position: relative;
+}
+
+.group-text {
+  flex-grow: 1; /* Ensure text takes up available space */
+  text-align: left;
 }
 
 /* Groups Heading */
@@ -243,26 +261,35 @@
 
 .group-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.group-button {
-  flex-grow: 1;
-  margin-right: 5px;
+  justify-content: center; /* ✅ Ensures button is centered */
+  width: 100%;
 }
 
 .delete-button {
-  background: none;
+  background-color: #23395B;
+  color: white;
   border: none;
-  color: red;
+  font-size: 12px;
+  width: 22px; /* Set a fixed width */
+  height: 22px; /* Set a fixed height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
-  padding: 2px;
+  transition: background-color 0.2s, color 0.2s;
+  margin-left: 8px;
+  flex-shrink: 0; /* Prevent button from stretching */
 }
 
-.delete-button:hover {
-  color: darkred;
+/* Ensure button turns light red on hover */
+.group-item .delete-button:hover {
+  background-color: rgb(255, 100, 100); /* Light red */
+}
+
+/* Ensure group text changes color when delete button is hovered */
+.group-item .delete-button:hover + .group-text {
+  color: red;
 }
 
 /* Center Panel */
@@ -279,7 +306,7 @@
 
 /* Right Sidebar */
 .right-sidebar {
-  width: 10%;
+  width: 12%;
   background-color: #406E8E;
   padding: 1rem;
   display: flex;
@@ -333,17 +360,15 @@
 /* Logout Button */
 .logout-button {
   position: absolute;
-  top: 10px;
+  top: 23px;
   left: 10px;
   background: linear-gradient(135deg, #211876, #4f40a1);
   color: white;
   border: none;
   padding: 10px 20px; /* Smaller padding */
-  font-size: 12px; /* Smaller text */
+  font-size: 14px; /* Smaller text */
   border-radius: 10px;
   cursor: pointer;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease-in-out;
   width: auto; /* Prevent stretching */
   height: auto; /* Prevent stretching */

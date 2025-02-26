@@ -55,7 +55,8 @@
     border-color: #406E8E;
   }
   
-  button {
+  .submit,
+  .toggle-auth-mode {
     width: 100%;
     padding: 0.8rem;
     font-size: 1rem;
@@ -68,7 +69,8 @@
     margin-top: 1rem;
   }
   
-  button:hover {
+  .submit:hover,
+  .toggle-auth-mode:hover {
     background: linear-gradient(135deg, #406E8E, #8EA8C3);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);

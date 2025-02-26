@@ -62,15 +62,25 @@ function App() {
                     setActivePanel('calendar');
                   }}
                 >
-                  {group}
+                  <span className="group-text">{group}</span>
+                  <button
+                    className="delete-button"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent clicking the group button
+                      handleDeleteGroup(group);
+                    }}
+                    title={`Delete ${group}`}
+                  >
+                    ❌
+                  </button>
                 </button>
-                <button
+                {/* <button
                   className="delete-button"
                   onClick={() => handleDeleteGroup(group)}
                   title={`Delete ${group}`}
                 >
                   ❌
-                </button>
+                </button> */}
               </li>
             ))}
           </ul>
