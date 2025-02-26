@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Connected</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+        }
+        h1 {
+            margin-top: 0;
+            color: #333;
+        }
+        .success {
+            color: #34A853;
+            font-size: 4rem;
+            margin: 20px 0;
+        }
+        .error {
+            color: #EA4335;
+            font-size: 4rem;
+            margin: 20px 0;
+        }
+        .message {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .button {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button:hover {
+            background-color: #3367D6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if success == 'true' %}
+            <div class="success">✓</div>
+            <h1>Google Calendar Connected!</h1>
+            <p class="message">
+                Your Google Calendar has been successfully connected for {{ email }}.
+                Your busy times will now be synchronized with your groups.
+            </p>
+        {% else %}
+            <div class="error">✗</div>
+            <h1>Connection Failed</h1>
+            <p class="message">
+                There was a problem connecting your Google Calendar.
+                Please try again or contact support.
+            </p>
+        {% endif %}
+        
+        <a href="javascript:void(0)" class="button" onclick="closeAndReturn()">Return to App</a>
+        
+        <script>
+            // Function to close window and return to parent
+            function closeAndReturn() {
+                // First send the message to the parent window
+                if (window.opener) {
+                    window.opener.postMessage({ 
+                        type: 'CALENDAR_CONNECTED',
+                        success: "{{ 'true' if success == 'true' else 'false' }}",
+                        email: '{{ email }}'
+                    }, '*');
+                    
+                    // Focus the parent window
+                    window.opener.focus();
+                    
+                    // Close this popup
+                    window.close();
+                } else {
+                    // Fallback if somehow not in a popup
+                    window.location.href = '/';
+                }
+            }
+            
+            // Automatically close this window after 5 seconds if it was opened in a popup
+            setTimeout(() => {
+                if (window.opener) {
+                    window.opener.postMessage({ 
+                        type: 'CALENDAR_CONNECTED',
+                        success: "{{ 'true' if success == 'true' else 'false' }}",
+                        email: '{{ email }}'
+                    }, '*');
+                    window.close();
+                }
+            }, 5000);
+        </script>
+    </div>
+</body>
+</html>

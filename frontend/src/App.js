@@ -6,6 +6,7 @@ import CreateGroup from './components/CreateGroup';
 import Inbox from './components/Inbox';
 import FriendsList from './components/FriendsList';
 import { useAuth } from './components/AuthContext'; // Make sure your AuthContext is correctly set up
+import GoogleCalendarConnector from './components/GoogleCalendarConnector';
 
 function App() {
   const [activePanel, setActivePanel] = useState('calendar');
@@ -46,7 +47,7 @@ function App() {
         </div>
         <button className="logout-button" onClick={logout}>Logout</button>
       </header>
-
+    
       <div className="main-container">
         {/* Left Sidebar - Groups */}
         <aside className="left-sidebar">
@@ -85,6 +86,10 @@ function App() {
 
         {/* Right Sidebar - Icons for Changing Panel */}
         <aside className="right-sidebar">
+          <GoogleCalendarConnector 
+          groups={groups}
+          onSync={() => console.log('Calendar synced!')} 
+          />
           <button onClick={() => setActivePanel('create-group')}>➕</button>
           <button onClick={() => setActivePanel('inbox')}>💬</button>
           <button onClick={() => setActivePanel('friends-list')}>👥</button>
