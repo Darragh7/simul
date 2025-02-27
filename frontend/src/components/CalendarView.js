@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from "../firebase/firebase";
-import { collection, getDocs, setDoc, doc } from "firebase/firestore";
+import { collection, doc, setDoc, onSnapshot } from "firebase/firestore";
 import './CalendarView.css';
 
 const CalendarView = ({ group, user }) => {
@@ -17,24 +17,19 @@ const CalendarView = ({ group, user }) => {
         "July", "August", "September", "October", "November", "December"
     ];
 
-    // Fetch booked slots from Firestore when component mounts or group changes
+    // Fetch events in real time
     useEffect(() => {
-        if (!group) return;
+        if (!group?.id) return;
 
-        const fetchEvents = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(db, `events/${group}/dates`));
-                const fetchedEvents = {};
-                querySnapshot.forEach((doc) => {
-                    fetchedEvents[doc.id] = doc.data().bookedSlots || {};
-                });
-                setEvents(fetchedEvents);
-            } catch (error) {
-                console.error("Error fetching events: ", error);
-            }
-        };
+        const unsubscribe = onSnapshot(collection(db, `events/${group.id}/dates`), (querySnapshot) => {
+            const fetchedEvents = {};
+            querySnapshot.forEach((doc) => {
+                fetchedEvents[doc.id] = doc.data().bookedSlots || {};
+            });
+            setEvents(fetchedEvents);
+        });
 
-        fetchEvents();
+        return () => unsubscribe(); // Cleanup listener on unmount
     }, [group]);
 
     const handleDayClick = (day) => {
@@ -46,34 +41,27 @@ const CalendarView = ({ group, user }) => {
     };
 
     const handleAddEvent = async () => {
-        if (!group || !selectedDate || !selectedSlot || eventInput.trim() === "") {
+        if (!group?.id || !selectedDate || !selectedSlot || eventInput.trim() === "") {
             alert("Please select a group, date, time, and enter an event title.");
             return;
         }
 
         const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`;
-        
-        // Use user email from the props or display name if available
         const userIdentifier = user?.email || user?.displayName || "anonymous";
         
         const updatedSlots = { ...events[dateKey] } || {};
         updatedSlots[selectedSlot] = { 
             title: eventInput, 
             user: userIdentifier,
-            userId: user?.uid || "unknown", // Store the user ID for additional reference
-            createdAt: new Date().toISOString() // Add timestamp
+            userId: user?.uid || "unknown",
+            createdAt: new Date().toISOString()
         };
 
-        setEvents((prev) => ({
-            ...prev,
-            [dateKey]: updatedSlots,
-        }));
-
         try {
-            await setDoc(doc(db, `events/${group}/dates`, dateKey), {
+            await setDoc(doc(db, `events/${group.id}/dates`, dateKey), {
                 bookedSlots: updatedSlots,
             });
-            setEventInput(""); // Clear input after saving
+            setEventInput("");
             setSelectedSlot(null);
         } catch (error) {
             console.error("Error saving event: ", error);
@@ -95,11 +83,9 @@ const CalendarView = ({ group, user }) => {
         setSelectedDate(null);
     };
 
-    // Format the display of the event including the creator's info
-    const formatEventDisplay = (event) => {
-        if (!event) return "";
-        return `${event.title} (by ${event.user})`;
-    };
+    if (!group) {
+        return <div>Please select a group to view the calendar.</div>;
+    }
 
     return (
         <div className="calendar-container">
@@ -107,7 +93,7 @@ const CalendarView = ({ group, user }) => {
                 <button className="arrow-btn" onClick={() => changeMonth(-1)}>◀</button>
                 <div className="month-dropdown-container">
                     <h2 onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)} style={{ cursor: 'pointer' }}>
-                        {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })} - {group || "No Group Selected"} ▼
+                        {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })} - {group.name} ▼
                     </h2>
                     {isMonthDropdownOpen && (
                         <div className="month-dropdown">
@@ -134,7 +120,6 @@ const CalendarView = ({ group, user }) => {
                             <div key={day} className="weekday">{day}</div>
                         ))}
                     </div>
-                    {/* Make the days grid scrollable */}
                     <div className="days-grid">
                         {Array.from({ length: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay() }, (_, i) => (
                             <div key={`empty-${i}`} className="empty-day"></div>
@@ -153,7 +138,6 @@ const CalendarView = ({ group, user }) => {
                     <h3>{currentDate.toLocaleString('default', { month: 'long' })} {selectedDate}</h3>
                     <button className="back-btn" onClick={() => setSelectedDate(null)}>⬅ Back</button>
 
-                    {/* Make the hourly grid scrollable */}
                     <div className="hourly-grid">
                         {timeSlots.map((slot, index) => {
                             const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`;

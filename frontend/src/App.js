@@ -1,40 +1,150 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import Login from './components/Login';
 import CalendarView from './components/CalendarView';
 import CreateGroup from './components/CreateGroup';
 import Inbox from './components/Inbox';
 import FriendsList from './components/FriendsList';
-import { useAuth } from './components/AuthContext'; // Make sure your AuthContext is correctly set up
+import { useAuth } from './components/AuthContext';
 import GoogleCalendarConnector from './components/GoogleCalendarConnector';
+import { collection, query, where, onSnapshot, getDocs, doc, updateDoc } from "firebase/firestore";
+import { db } from './firebase/firebase';
 
 function App() {
   const [activePanel, setActivePanel] = useState('calendar');
   const [selectedGroup, setSelectedGroup] = useState(null);
-  const [groups, setGroups] = useState(["Work", "Friends", "Family"]);
-  const { user, logout } = useAuth(); // Get the logout function from the AuthContext
+  const [groups, setGroups] = useState([]);
+  const [friendRequests, setFriendRequests] = useState([]);
+  const { user, logout } = useAuth();
+
+  // Fetch groups from Firestore
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const unsubscribe = onSnapshot(
+      query(collection(db, "groups"), where("members", "array-contains", user.email)),
+      (snapshot) => {
+        const groupsData = [];
+        snapshot.forEach((doc) => {
+          groupsData.push({
+            id: doc.id,
+            ...doc.data()
+          });
+        });
+        setGroups(groupsData);
+      },
+      (error) => {
+        console.error("Error fetching groups:", error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [user]);
+
+  // Fetch friend requests (inbox notifications)
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const requestsQuery = query(
+      collection(db, "inbox"),
+      where("to", "==", user.email),
+      where("status", "==", "pending")
+    );
+
+    const unsubscribe = onSnapshot(requestsQuery, (snapshot) => {
+      const requests = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setFriendRequests(requests.filter(req => req.type === "friend-request" || req.type === "group-invite"));
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   // If no user is logged in, show the Login component
   if (!user) {
     return <Login />;
   }
 
-  // Add a new group
-  const handleCreateGroup = (groupName) => {
-    if (groupName && !groups.includes(groupName)) {
-      setGroups((prevGroups) => [...prevGroups, groupName]);
-      setActivePanel('calendar');
-      setSelectedGroup(groupName);
-    }
+  // Handle sidebar plus button click
+  const handlePlusClick = () => {
+    setActivePanel('create-group');
   };
 
-  // Delete a group
-  const handleDeleteGroup = (groupName) => {
-    setGroups((prevGroups) => prevGroups.filter((group) => group !== groupName));
-    if (selectedGroup === groupName) {
+  // Delete a group (you would add Firestore delete functionality here)
+  const handleDeleteGroup = (groupId) => {
+    // This would need to be updated with Firestore delete logic
+    setGroups((prevGroups) => prevGroups.filter((group) => group.id !== groupId));
+    if (selectedGroup?.id === groupId) {
       setSelectedGroup(null);
       setActivePanel('calendar');
     }
+  };
+
+  // Handle accepting a friend request
+  const acceptFriendRequest = async (requestId, fromEmail) => {
+    // Update the request status to 'accepted'
+    const requestDoc = doc(db, "inbox", requestId);
+    await updateDoc(requestDoc, {
+      status: 'accepted'
+    });
+
+    // Add the user to each other's friend list (example implementation)
+    const userRef = doc(db, "users", user.email);
+    const friendRef = doc(db, "users", fromEmail);
+
+    await updateDoc(userRef, {
+      friends: [...user.friends, fromEmail]
+    });
+
+    await updateDoc(friendRef, {
+      friends: [...friendRef.friends, user.email]
+    });
+
+    // Re-fetch friend requests
+    setFriendRequests(prevRequests => prevRequests.filter(request => request.id !== requestId));
+  };
+
+  // Handle rejecting a friend request
+  const rejectFriendRequest = async (requestId) => {
+    const requestDoc = doc(db, "inbox", requestId);
+    await updateDoc(requestDoc, {
+      status: 'rejected'
+    });
+
+    // Re-fetch friend requests
+    setFriendRequests(prevRequests => prevRequests.filter(request => request.id !== requestId));
+  };
+
+  // Handle accepting a group invitation
+  const acceptGroupInvite = async (requestId, groupId) => {
+    const requestDoc = doc(db, "inbox", requestId);
+    const groupDoc = doc(db, "groups", groupId);
+
+    // Add the user to the group
+    await updateDoc(groupDoc, {
+      members: [...groupId.members, user.email]
+    });
+
+    // Update request status to accepted
+    await updateDoc(requestDoc, {
+      status: 'accepted'
+    });
+
+    // Re-fetch friend requests
+    setFriendRequests(prevRequests => prevRequests.filter(request => request.id !== requestId));
+  };
+
+  // Handle rejecting a group invitation
+  const rejectGroupInvite = async (requestId) => {
+    const requestDoc = doc(db, "inbox", requestId);
+    await updateDoc(requestDoc, {
+      status: 'rejected'
+    });
+
+    // Re-fetch friend requests
+    setFriendRequests(prevRequests => prevRequests.filter(request => request.id !== requestId));
   };
 
   return (
@@ -53,8 +163,8 @@ function App() {
         <aside className="left-sidebar">
           <h3>Groups</h3>
           <ul>
-            {groups.map((group, index) => (
-              <li key={index} className="group-item">
+            {groups.map((group) => (
+              <li key={group.id} className="group-item">
                 <button
                   className="group-button"
                   onClick={() => {
@@ -62,15 +172,17 @@ function App() {
                     setActivePanel('calendar');
                   }}
                 >
-                  {group}
+                  {group.name}
                 </button>
-                <button
-                  className="delete-button"
-                  onClick={() => handleDeleteGroup(group)}
-                  title={`Delete ${group}`}
-                >
-                  ❌
-                </button>
+                {group.createdBy === user.email && (
+                  <button
+                    className="delete-button"
+                    onClick={() => handleDeleteGroup(group.id)}
+                    title={`Delete ${group.name}`}
+                  >
+                    ❌
+                  </button>
+                )}
               </li>
             ))}
           </ul>
@@ -78,21 +190,21 @@ function App() {
 
         {/* Center Panel - Dynamic Content */}
         <main className="center-panel">
-          {activePanel === 'calendar' && <CalendarView group={selectedGroup} user={user} />}
-          {activePanel === 'create-group' && <CreateGroup onCreateGroup={handleCreateGroup} />}
-          {activePanel === 'inbox' && <Inbox user={user} />}
-          {activePanel === 'friends-list' && <FriendsList user={user} />}
+          {activePanel === 'calendar' && <CalendarView group={selectedGroup} userEmail={user.email} />}
+          {activePanel === 'create-group' && <CreateGroup userEmail={user.email} onGroupCreated={() => setActivePanel('calendar')} />}
+          {activePanel === 'inbox' && <Inbox userEmail={user.email} friendRequests={friendRequests} acceptFriendRequest={acceptFriendRequest} rejectFriendRequest={rejectFriendRequest} acceptGroupInvite={acceptGroupInvite} rejectGroupInvite={rejectGroupInvite} />}
+          {activePanel === 'friends-list' && <FriendsList userEmail={user.email} />}
         </main>
 
         {/* Right Sidebar - Icons for Changing Panel */}
         <aside className="right-sidebar">
           <GoogleCalendarConnector 
-          groups={groups}
-          onSync={() => console.log('Calendar synced!')} 
+            groupNames={groups.map(group => group.name)} 
+            onSync={() => console.log('Calendar synced!')} 
           />
-          <button onClick={() => setActivePanel('create-group')}>➕</button>
-          <button onClick={() => setActivePanel('inbox')}>💬</button>
-          <button onClick={() => setActivePanel('friends-list')}>👥</button>
+          <button onClick={handlePlusClick} title="Create Group">➕</button>
+          <button onClick={() => setActivePanel('inbox')} title="Inbox">💬</button>
+          <button onClick={() => setActivePanel('friends-list')} title="Friends List">👥</button>
         </aside>
       </div>
     </div>
