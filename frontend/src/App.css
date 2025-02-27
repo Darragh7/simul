@@ -292,19 +292,21 @@
 }
 
 .right-sidebar button {
-  font-size: 2rem;
+  font-size: 1.5rem;
   background: none;
   border: none;
   cursor: pointer;
-  margin: 10px;
-  color: #161925;
+  margin: 13px;
+  color: #fcfcfc;
   transition: all 0.2s;
+  padding: 10px;
 }
 
 .right-sidebar button:hover {
   color: #fff;
   transform: scale(1.1);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  padding: 10px, 10px;
 }
 
 /* Panel Content */
@@ -1159,3 +1161,4 @@
 ::-webkit-scrollbar-thumb-horizontal:hover {
   background: #0056b3;
 }
+

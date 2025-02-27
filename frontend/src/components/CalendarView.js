@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { db } from "../firebase/firebase";
-import { collection, doc, setDoc, onSnapshot } from "firebase/firestore";
-import './CalendarView.css';
+import { collection, doc, setDoc, onSnapshot, addDoc } from "firebase/firestore";
+import "./CalendarView.css";
 
 const CalendarView = ({ group, user }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -10,11 +10,12 @@ const CalendarView = ({ group, user }) => {
     const [eventInput, setEventInput] = useState("");
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
+    const [showingFreeTime, setShowingFreeTime] = useState(false);
 
     const timeSlots = Array.from({ length: 24 }, (_, i) => `${i}:00 - ${i + 1}:00`);
     const months = [
         "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
+        "July", "August", "September", "October", "November", "December",
     ];
 
     // Fetch events in real time
@@ -47,14 +48,16 @@ const CalendarView = ({ group, user }) => {
         }
 
         const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`;
-        const userIdentifier = user?.email || user?.displayName || "anonymous";
         
+        // Use the authenticated user's email, displayName, or uid as the creator identifier
+        const userIdentifier = user?.email || user?.displayName || user?.uid || "unknown";
+
         const updatedSlots = { ...events[dateKey] } || {};
-        updatedSlots[selectedSlot] = { 
-            title: eventInput, 
-            user: userIdentifier,
-            userId: user?.uid || "unknown",
-            createdAt: new Date().toISOString()
+        updatedSlots[selectedSlot] = {
+            title: eventInput,
+            user: userIdentifier, // Use the authenticated user's identifier
+            userId: user?.uid || "unknown", // Use the user's UID for reference
+            createdAt: new Date().toISOString(),
         };
 
         try {
@@ -63,8 +66,38 @@ const CalendarView = ({ group, user }) => {
             });
             setEventInput("");
             setSelectedSlot(null);
+
+            // Send notification to all group members except the creator
+            await sendNotificationToMembers(group, userIdentifier, eventInput, dateKey, selectedSlot);
         } catch (error) {
             console.error("Error saving event: ", error);
+        }
+    };
+
+    const sendNotificationToMembers = async (group, creatorEmail, eventTitle, dateKey, timeSlot) => {
+        if (!group.members || group.members.length === 0) return;
+
+        const [year, month, day] = dateKey.split("-");
+        const formattedDate = `${months[parseInt(month) - 1]} ${day}, ${year}`;
+
+        for (const memberEmail of group.members) {
+            if (memberEmail === creatorEmail) continue;
+
+            try {
+                await addDoc(collection(db, "inbox"), {
+                    to: memberEmail,
+                    from: creatorEmail,
+                    type: "event-notification",
+                    status: "unread",
+                    createdAt: new Date().toISOString(),
+                    message: `${creatorEmail} added a new event "${eventTitle}" on ${formattedDate} at ${timeSlot} in group "${group.name}"`,
+                    groupId: group.id,
+                    eventDate: dateKey,
+                    eventTime: timeSlot,
+                });
+            } catch (error) {
+                console.error("Error sending notification: ", error);
+            }
         }
     };
 
@@ -83,6 +116,10 @@ const CalendarView = ({ group, user }) => {
         setSelectedDate(null);
     };
 
+    const toggleFreeTimeView = () => {
+        setShowingFreeTime(!showingFreeTime);
+    };
+
     if (!group) {
         return <div>Please select a group to view the calendar.</div>;
     }
@@ -92,8 +129,8 @@ const CalendarView = ({ group, user }) => {
             <div className="calendar-header">
                 <button className="arrow-btn" onClick={() => changeMonth(-1)}>◀</button>
                 <div className="month-dropdown-container">
-                    <h2 onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)} style={{ cursor: 'pointer' }}>
-                        {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })} - {group.name} ▼
+                    <h2 onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)} style={{ cursor: "pointer" }}>
+                        {currentDate.toLocaleString("default", { month: "long", year: "numeric" })} - {group.name} ▼
                     </h2>
                     {isMonthDropdownOpen && (
                         <div className="month-dropdown">
@@ -110,13 +147,20 @@ const CalendarView = ({ group, user }) => {
                     )}
                 </div>
                 <button className="arrow-btn" onClick={() => changeMonth(1)}>▶</button>
-                {group && <button className="find-free-time-btn">Find Free Time</button>}
+                {group && (
+                    <button
+                        className={`find-free-time-btn ${showingFreeTime ? "active" : ""}`}
+                        onClick={toggleFreeTimeView}
+                    >
+                        {showingFreeTime ? "Hide Free Time" : "Find Free Time"}
+                    </button>
+                )}
             </div>
 
             {!selectedDate && (
                 <div className="month-view">
                     <div className="weekdays">
-                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                             <div key={day} className="weekday">{day}</div>
                         ))}
                     </div>
@@ -135,18 +179,19 @@ const CalendarView = ({ group, user }) => {
 
             {selectedDate && (
                 <div className="day-view">
-                    <h3>{currentDate.toLocaleString('default', { month: 'long' })} {selectedDate}</h3>
+                    <h3>{currentDate.toLocaleString("default", { month: "long" })} {selectedDate}</h3>
                     <button className="back-btn" onClick={() => setSelectedDate(null)}>⬅ Back</button>
 
                     <div className="hourly-grid">
                         {timeSlots.map((slot, index) => {
                             const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`;
                             const event = events[dateKey]?.[slot];
-                            
+                            const isFree = showingFreeTime && !event;
+
                             return (
-                                <div 
-                                    key={index} 
-                                    className={`hour-slot ${event ? 'booked' : ''}`} 
+                                <div
+                                    key={index}
+                                    className={`hour-slot ${event ? "booked" : ""} ${isFree ? "free" : ""}`}
                                     onClick={() => handleSlotClick(slot)}
                                 >
                                     <div className="slot-time">{slot}</div>
@@ -156,6 +201,7 @@ const CalendarView = ({ group, user }) => {
                                             <div className="event-creator">Created by: {event.user}</div>
                                         </div>
                                     )}
+                                    {isFree && <div className="free-indicator">Available</div>}
                                 </div>
                             );
                         })}
@@ -164,10 +210,10 @@ const CalendarView = ({ group, user }) => {
                     {selectedSlot && (
                         <div className="event-input-container">
                             <h4>Adding Event for {selectedSlot}</h4>
-                            <input 
-                                type="text" 
-                                placeholder="Event title..." 
-                                value={eventInput} 
+                            <input
+                                type="text"
+                                placeholder="Event title..."
+                                value={eventInput}
                                 onChange={(e) => setEventInput(e.target.value)}
                             />
                             <button onClick={handleAddEvent}>Add Event</button>

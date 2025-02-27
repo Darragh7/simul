@@ -7,7 +7,7 @@ import Inbox from './components/Inbox';
 import FriendsList from './components/FriendsList';
 import { useAuth } from './components/AuthContext';
 import GoogleCalendarConnector from './components/GoogleCalendarConnector';
-import { collection, query, where, onSnapshot, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import { db } from './firebase/firebase';
 
 function App() {
@@ -190,7 +190,7 @@ function App() {
 
         {/* Center Panel - Dynamic Content */}
         <main className="center-panel">
-          {activePanel === 'calendar' && <CalendarView group={selectedGroup} userEmail={user.email} />}
+          {activePanel === 'calendar' && <CalendarView group={selectedGroup} user={user} />}
           {activePanel === 'create-group' && <CreateGroup userEmail={user.email} onGroupCreated={() => setActivePanel('calendar')} />}
           {activePanel === 'inbox' && <Inbox userEmail={user.email} friendRequests={friendRequests} acceptFriendRequest={acceptFriendRequest} rejectFriendRequest={rejectFriendRequest} acceptGroupInvite={acceptGroupInvite} rejectGroupInvite={rejectGroupInvite} />}
           {activePanel === 'friends-list' && <FriendsList userEmail={user.email} />}
