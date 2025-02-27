@@ -7,6 +7,9 @@ import {
     onAuthStateChanged 
 } from 'firebase/auth';
 
+// API base URL - change this to match your Flask backend
+const API_BASE_URL = 'http://127.0.0.1:5000';
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -29,8 +32,26 @@ export const AuthProvider = ({ children }) => {
         return createUserWithEmailAndPassword(auth, email, password);
     };
 
-    const logout = () => {
-        return signOut(auth);
+    const logout = async () => {
+        try {
+            // First, call the backend to disconnect Google Calendar
+            await fetch(`${API_BASE_URL}/logout`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            console.log('Backend logout successful, disconnecting from Firebase');
+            
+            // Then sign out from Firebase
+            return await signOut(auth);
+        } catch (error) {
+            console.error('Error during logout:', error);
+            // Still try to sign out from Firebase even if the backend call fails
+            return await signOut(auth);
+        }
     };
 
     const value = {

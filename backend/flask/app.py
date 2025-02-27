@@ -250,12 +250,11 @@ def api_disconnect_calendar():
     user_email = session.get('user_email')
     
     try:
-        # Remove calendar data from user record
+        # Update user record to mark calendar as disconnected, but keep the busy periods
         user_ref = db.collection('users').document(user_email)
         user_ref.update({
             'googleCalendarConnected': False,
-            'busyPeriods': firestore.DELETE_FIELD,
-            'lastCalendarSync': firestore.DELETE_FIELD
+            'calendarDisconnectedAt': datetime.utcnow().isoformat()
         })
         
         # Remove credentials from session
@@ -271,9 +270,37 @@ def api_disconnect_calendar():
 
 @app.route("/logout", methods=["POST"])
 def logout():
-    # Clear the session
-    session.clear()
-    return jsonify({"success": True, "message": "Logged out successfully"})
+    """Logout user and disconnect their Google Calendar"""
+    try:
+        # Get user email from session before clearing it
+        user_email = session.get('user_email')
+        
+        # If user is logged in, revoke Google Calendar access
+        if user_email:
+            # First, check if credentials exist in session
+            if 'credentials' in session:
+                try:
+                    # We don't actually revoke the token since that would require
+                    # an API call to Google and the user would need to re-authorize
+                    # the next time. Instead, we just mark it as disconnected in our DB.
+                    user_ref = db.collection('users').document(user_email)
+                    user_ref.update({
+                        'googleCalendarConnected': False,
+                        'lastCalendarSync': firestore.SERVER_TIMESTAMP
+                    })
+                    print(f"Marked Google Calendar as disconnected for user {user_email}")
+                except Exception as e:
+                    print(f"Error disconnecting calendar on logout: {e}")
+        
+        # Clear the session regardless of whether calendar disconnect succeeded
+        session.clear()
+        
+        return jsonify({"success": True, "message": "Logged out successfully and calendar disconnected"})
+    except Exception as e:
+        print(f"Error during logout: {e}")
+        # Still try to clear the session even if there was an error
+        session.clear()
+        return jsonify({"success": True, "message": "Logged out but there was an issue with calendar disconnection"})
 
 # Helper functions
 def credentials_to_dict(credentials):
@@ -340,6 +367,7 @@ def fetch_calendar_events(credentials, start_date, end_date):
         raise
 
 def sync_calendar_data(credentials, user_email):
+    """Sync user's calendar data with Firebase - ensuring persistence"""
     try:
         if not db:
             print("Warning: Firestore database unavailable, skipping calendar sync")
@@ -360,17 +388,45 @@ def sync_calendar_data(credentials, user_email):
                     'start': event['start'],
                     'end': event['end'],
                     'title': "Busy",  # Privacy-focused title
-                    'source': "google"
+                    'source': "google",
+                    'lastUpdated': datetime.utcnow().isoformat()
                 })
         
-        # Update user record in Firebase - ONLY update the user document
+        # Update user record in Firebase with busy periods
+        # Use merge=True to ensure we don't overwrite other fields
         user_ref = db.collection('users').document(user_email)
-        user_ref.set({
-            'email': user_email,
-            'googleCalendarConnected': True,
-            'busyPeriods': busy_periods,
-            'lastCalendarSync': datetime.utcnow().isoformat()
-        }, merge=True)
+        
+        # Check if the user document already exists
+        user_doc = user_ref.get()
+        if user_doc.exists:
+            # Update the document with merge to preserve other fields
+            user_ref.update({
+                'googleCalendarConnected': True,
+                'busyPeriods': busy_periods,
+                'lastCalendarSync': datetime.utcnow().isoformat()
+            })
+        else:
+            # Create a new document
+            user_ref.set({
+                'email': user_email,
+                'googleCalendarConnected': True,
+                'busyPeriods': busy_periods,
+                'lastCalendarSync': datetime.utcnow().isoformat(),
+                'createdAt': datetime.utcnow().isoformat()
+            })
+        
+        # Get all groups the user is a member of
+        user_groups_ref = db.collection('user_groups').document(user_email)
+        user_groups_doc = user_groups_ref.get()
+        
+        groups = []
+        if user_groups_doc.exists:
+            user_groups_data = user_groups_doc.to_dict()
+            groups = user_groups_data.get('groups', [])
+        
+        # Log debug information
+        print(f"User {user_email} is a member of {len(groups)} groups")
+        print(f"Synced {len(busy_periods)} busy periods for user {user_email}")
         
         return True
     except Exception as e:

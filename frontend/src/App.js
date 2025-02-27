@@ -12,7 +12,22 @@ function App() {
   const [activePanel, setActivePanel] = useState('calendar');
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [groups, setGroups] = useState(["Work", "Friends", "Family"]);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { user, logout } = useAuth(); // Get the logout function from the AuthContext
+
+  // Handle logout with Google Calendar disconnection
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await logout(); // This will call our updated logout function that disconnects calendar
+      // No need for redirect as AuthContext will handle the state change
+    } catch (error) {
+      console.error('Error logging out:', error);
+      alert('There was a problem logging out. Please try again.');
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   // If no user is logged in, show the Login component
   if (!user) {
@@ -45,7 +60,13 @@ function App() {
         <div className="user-info">
           {user.displayName || user.email}
         </div>
-        <button className="logout-button" onClick={logout}>Logout</button>
+        <button 
+          className="logout-button" 
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+        >
+          {isLoggingOut ? 'Logging out...' : 'Logout'}
+        </button>
       </header>
     
       <div className="main-container">
@@ -87,8 +108,8 @@ function App() {
         {/* Right Sidebar - Icons for Changing Panel */}
         <aside className="right-sidebar">
           <GoogleCalendarConnector 
-          groups={groups}
-          onSync={() => console.log('Calendar synced!')} 
+            groups={groups}
+            onSync={() => console.log('Calendar synced!')} 
           />
           <button onClick={() => setActivePanel('create-group')}>➕</button>
           <button onClick={() => setActivePanel('inbox')}>💬</button>
