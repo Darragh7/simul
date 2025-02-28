@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { db } from "../firebase/firebase";
-import { collection, getDocs, setDoc, doc, getDoc } from "firebase/firestore";
-import './CalendarView.css';
+import { collection, doc, setDoc, onSnapshot, addDoc, getDoc, getDocs } from "firebase/firestore";
+import "./CalendarView.css";
 
 const CalendarView = ({ group, user }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -10,49 +10,69 @@ const CalendarView = ({ group, user }) => {
     const [eventInput, setEventInput] = useState("");
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
+    const [showingFreeTime, setShowingFreeTime] = useState(false);
     const [groupMembers, setGroupMembers] = useState([]);
     const [memberBusyPeriods, setMemberBusyPeriods] = useState({}); // Store busy periods from members' calendars
     const [isLoading, setIsLoading] = useState(false);
 
+    // Helper to handle different group formats (object or string)
+    const getGroupId = () => {
+        if (!group) return null;
+        return typeof group === 'object' ? group.id : group;
+    };
+
+    const getGroupName = () => {
+        if (!group) return "No Group Selected";
+        return typeof group === 'object' ? group.name : group;
+    };
+
+    const getGroupMembers = () => {
+        if (!group) return [];
+        return typeof group === 'object' ? group.members || [] : [];
+    };
+
     const timeSlots = Array.from({ length: 24 }, (_, i) => `${i}:00 - ${i + 1}:00`);
     const months = [
         "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
+        "July", "August", "September", "October", "November", "December",
     ];
 
-    // Fetch booked slots from Firestore when component mounts or group changes
+    // Fetch events in real time
     useEffect(() => {
-        if (!group) return;
+        const groupId = getGroupId();
+        if (!groupId) return;
 
-        const fetchEvents = async () => {
-            try {
-                setIsLoading(true);
-                const querySnapshot = await getDocs(collection(db, `events/${group}/dates`));
+        setIsLoading(true);
+        const unsubscribe = onSnapshot(
+            collection(db, `events/${groupId}/dates`), 
+            (querySnapshot) => {
                 const fetchedEvents = {};
                 querySnapshot.forEach((doc) => {
                     fetchedEvents[doc.id] = doc.data().bookedSlots || {};
                 });
                 setEvents(fetchedEvents);
                 setIsLoading(false);
-            } catch (error) {
+            },
+            (error) => {
                 console.error("Error fetching events: ", error);
                 setIsLoading(false);
             }
-        };
+        );
 
-        fetchEvents();
+        return () => unsubscribe(); // Cleanup listener on unmount
     }, [group]);
 
     // Fetch group members and their busy periods
     useEffect(() => {
-        if (!group) return;
+        const groupId = getGroupId();
+        if (!groupId) return;
 
         const fetchGroupMembers = async () => {
             try {
                 setIsLoading(true);
                 
                 // Step 1: Get all members from the group/groupId/members collection directly
-                const membersSnapshot = await getDocs(collection(db, `groups/${group}/members`));
+                const membersSnapshot = await getDocs(collection(db, `groups/${groupId}/members`));
                 const members = [];
                 membersSnapshot.forEach(doc => {
                     members.push({
@@ -152,8 +172,37 @@ const CalendarView = ({ group, user }) => {
         }
     };
 
+    const sendNotificationToMembers = async (groupId, creatorEmail, eventTitle, dateKey, timeSlot) => {
+        const members = getGroupMembers();
+        if (!members || members.length === 0) return;
+
+        const [year, month, day] = dateKey.split("-");
+        const formattedDate = `${months[parseInt(month) - 1]} ${day}, ${year}`;
+
+        for (const memberEmail of members) {
+            if (memberEmail === creatorEmail) continue;
+
+            try {
+                await addDoc(collection(db, "inbox"), {
+                    to: memberEmail,
+                    from: creatorEmail,
+                    type: "event-notification",
+                    status: "unread",
+                    createdAt: new Date().toISOString(),
+                    message: `${creatorEmail} added a new event "${eventTitle}" on ${formattedDate} at ${timeSlot} in group "${getGroupName()}"`,
+                    groupId: groupId,
+                    eventDate: dateKey,
+                    eventTime: timeSlot,
+                });
+            } catch (error) {
+                console.error("Error sending notification: ", error);
+            }
+        }
+    };
+
     const handleAddEvent = async () => {
-        if (!group || !selectedDate || !selectedSlot || eventInput.trim() === "") {
+        const groupId = getGroupId();
+        if (!groupId || !selectedDate || !selectedSlot || eventInput.trim() === "") {
             alert("Please select a group, date, time, and enter an event title.");
             return;
         }
@@ -171,17 +220,15 @@ const CalendarView = ({ group, user }) => {
             createdAt: new Date().toISOString() // Add timestamp
         };
 
-        setEvents((prev) => ({
-            ...prev,
-            [dateKey]: updatedSlots,
-        }));
-
         try {
-            await setDoc(doc(db, `events/${group}/dates`, dateKey), {
+            await setDoc(doc(db, `events/${groupId}/dates`, dateKey), {
                 bookedSlots: updatedSlots,
             });
             setEventInput(""); // Clear input after saving
             setSelectedSlot(null);
+            
+            // Send notification to all group members except the creator
+            await sendNotificationToMembers(groupId, userIdentifier, eventInput, dateKey, selectedSlot);
         } catch (error) {
             console.error("Error saving event: ", error);
         }
@@ -202,6 +249,10 @@ const CalendarView = ({ group, user }) => {
         setSelectedDate(null);
     };
 
+    const toggleFreeTimeView = () => {
+        setShowingFreeTime(!showingFreeTime);
+    };
+
     // Check if a time slot is busy due to members' busy periods
     const isBusyFromMemberCalendars = (dateKey, timeSlot) => {
         return memberBusyPeriods[dateKey]?.[timeSlot]?.length > 0;
@@ -212,13 +263,22 @@ const CalendarView = ({ group, user }) => {
         return memberBusyPeriods[dateKey]?.[timeSlot] || [];
     };
 
+    // Check if the slot is free (not booked and no busy members)
+    const isSlotFree = (dateKey, timeSlot) => {
+        return !events[dateKey]?.[timeSlot] && !isBusyFromMemberCalendars(dateKey, timeSlot);
+    };
+
+    if (!group) {
+        return <div>Please select a group to view the calendar.</div>;
+    }
+
     return (
         <div className="calendar-container">
             <div className="calendar-header">
                 <button className="arrow-btn" onClick={() => changeMonth(-1)}>◀</button>
                 <div className="month-dropdown-container">
-                    <h2 onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)} style={{ cursor: 'pointer' }}>
-                        {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })} - {group || "No Group Selected"} ▼
+                    <h2 onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)} style={{ cursor: "pointer" }}>
+                        {currentDate.toLocaleString("default", { month: "long", year: "numeric" })} - {getGroupName()} ▼
                     </h2>
                     {isMonthDropdownOpen && (
                         <div className="month-dropdown">
@@ -235,7 +295,12 @@ const CalendarView = ({ group, user }) => {
                     )}
                 </div>
                 <button className="arrow-btn" onClick={() => changeMonth(1)}>▶</button>
-                {group && <button className="find-free-time-btn">Find Free Time</button>}
+                <button
+                    className={`find-free-time-btn ${showingFreeTime ? "active" : ""}`}
+                    onClick={toggleFreeTimeView}
+                >
+                    {showingFreeTime ? "Hide Free Time" : "Find Free Time"}
+                </button>
             </div>
 
             {isLoading && <div className="loading">Loading calendar data...</div>}
@@ -243,11 +308,10 @@ const CalendarView = ({ group, user }) => {
             {!selectedDate && !isLoading && (
                 <div className="month-view">
                     <div className="weekdays">
-                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                             <div key={day} className="weekday">{day}</div>
                         ))}
                     </div>
-                    {/* Make the days grid scrollable */}
                     <div className="days-grid">
                         {Array.from({ length: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay() }, (_, i) => (
                             <div key={`empty-${i}`} className="empty-day"></div>
@@ -263,21 +327,21 @@ const CalendarView = ({ group, user }) => {
 
             {selectedDate && !isLoading && (
                 <div className="day-view">
-                    <h3>{currentDate.toLocaleString('default', { month: 'long' })} {selectedDate}</h3>
+                    <h3>{currentDate.toLocaleString("default", { month: "long" })} {selectedDate}</h3>
                     <button className="back-btn" onClick={() => setSelectedDate(null)}>⬅ Back</button>
 
-                    {/* Make the hourly grid scrollable */}
                     <div className="hourly-grid">
                         {timeSlots.map((slot, index) => {
                             const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`;
                             const event = events[dateKey]?.[slot];
                             const isBusyFromCalendar = isBusyFromMemberCalendars(dateKey, slot);
                             const busyMembers = getBusyMembers(dateKey, slot);
+                            const isFree = showingFreeTime && isSlotFree(dateKey, slot);
                             
                             return (
                                 <div 
                                     key={index} 
-                                    className={`hour-slot ${event ? 'booked' : ''} ${isBusyFromCalendar ? 'calendar-busy' : ''}`} 
+                                    className={`hour-slot ${event ? 'booked' : ''} ${isBusyFromCalendar ? 'calendar-busy' : ''} ${isFree ? 'free' : ''}`} 
                                     onClick={() => handleSlotClick(slot)}
                                 >
                                     <div className="slot-time">{slot}</div>
@@ -297,6 +361,7 @@ const CalendarView = ({ group, user }) => {
                                             </div>
                                         </div>
                                     )}
+                                    {isFree && <div className="free-indicator">Available</div>}
                                 </div>
                             );
                         })}
