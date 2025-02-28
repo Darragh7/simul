@@ -74,13 +74,6 @@ function App() {
                     ❌
                   </button>
                 </button>
-                {/* <button
-                  className="delete-button"
-                  onClick={() => handleDeleteGroup(group)}
-                  title={`Delete ${group}`}
-                >
-                  ❌
-                </button> */}
               </li>
             ))}
           </ul>
@@ -92,14 +85,17 @@ function App() {
           {activePanel === 'create-group' && <CreateGroup onCreateGroup={handleCreateGroup} />}
           {activePanel === 'inbox' && <Inbox user={user} />}
           {activePanel === 'friends-list' && <FriendsList user={user} />}
+          {activePanel === '' && <FriendsList user={user} />}
         </main>
 
         {/* Right Sidebar - Icons for Changing Panel */}
         <aside className="right-sidebar">
-          <GoogleCalendarConnector 
-          groups={groups}
-          onSync={() => console.log('Calendar synced!')} 
-          />
+          <div className="google-sync">
+            <GoogleCalendarConnector
+            groups={groups}
+            onSync={() => console.log('Calendar synced!')} 
+            />
+          </div>
           <button onClick={() => setActivePanel('create-group')}>➕</button>
           <button onClick={() => setActivePanel('inbox')}>💬</button>
           <button onClick={() => setActivePanel('friends-list')}>👥</button>

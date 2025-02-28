@@ -312,26 +312,40 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-left: 1px solid #23395B;
+  /* border-left: 1px solid #23395B; */
   box-shadow: -4px 0 8px rgba(0, 0, 0, 0.1);
   border-top-left-radius: 12px;
   border-bottom-left-radius: 12px;
 }
 
 .right-sidebar button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+  padding: 0.5rem;
+  margin: 0.5rem auto;
+  border-radius: 8px;
+  position: relative;
   font-size: 2rem;
-  background: none;
+  text-align: center;
+  background: #427294;
   border: none;
   cursor: pointer;
-  margin: 10px;
-  color: #161925;
+  color: white;
   transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  min-width: 90px;
 }
 
 .right-sidebar button:hover {
   color: #fff;
   transform: scale(1.1);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.google-sync * {
+  font-size: 1.3rem !important;
 }
 
 /* Panel Content */
