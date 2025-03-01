@@ -269,10 +269,12 @@ const acceptGroupInvite = async (requestId, groupId, groupName) => {
 
         {/* Right Sidebar - Icons for Changing Panel */}
         <aside className="right-sidebar">
-          <GoogleCalendarConnector 
-          groups={groups}
-          onSync={() => console.log('Calendar synced!')} 
-          />
+          <div className="google-sync">
+            <GoogleCalendarConnector 
+            groups={groups}
+            onSync={() => console.log('Calendar synced!')} 
+            />
+          </div>
           <button onClick={handlePlusClick} title="Create Group">➕</button>
           <button onClick={() => setActivePanel('inbox')} title="Inbox">💬</button>
           <button onClick={() => setActivePanel('friends-list')} title="Friends List">👥</button>
