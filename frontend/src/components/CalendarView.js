@@ -7,11 +7,11 @@ import {
   onSnapshot, 
   addDoc, 
   getDoc, 
-  getDocs,
-  query,
-  where
+  getDocs 
 } from "firebase/firestore";
 import "./CalendarView.css";
+import BucketListView from "./BucketListView";
+import FindFreeTimes from "./FindFreeTimes";
 
 const CalendarView = ({ group, user }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -24,9 +24,12 @@ const CalendarView = ({ group, user }) => {
     const [groupMembers, setGroupMembers] = useState([]);
     const [memberBusyPeriods, setMemberBusyPeriods] = useState({});
     const [isLoading, setIsLoading] = useState(false);
-    
-    // Use a ref to store each user's busy periods separately
     const userBusyPeriodsRef = useRef({});
+    
+    // Bucket list feature states
+    const [viewMode, setViewMode] = useState('calendar'); // 'calendar' or 'bucketList'
+    const [selectedBucketItem, setSelectedBucketItem] = useState(null);
+    const [showFindTimes, setShowFindTimes] = useState(false);
 
     // Helper to handle different group formats (object or string)
     const getGroupId = () => {
@@ -44,12 +47,15 @@ const CalendarView = ({ group, user }) => {
         return typeof group === 'object' ? group.members || [] : [];
     };
 
+    // All the existing calendar functionality remains the same - timeslots, months, etc.
     const timeSlots = Array.from({ length: 24 }, (_, i) => `${i}:00 - ${i + 1}:00`);
     const months = [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December",
     ];
 
+    // Get events useEffect and all other event-related useEffects remain the same
+    
     // Fetch events in real time
     useEffect(() => {
         const groupId = getGroupId();
@@ -226,6 +232,7 @@ const CalendarView = ({ group, user }) => {
         };
     }, [groupMembers]);
 
+    // All the existing event handlers remain the same
     const handleDayClick = (day) => {
         setSelectedDate(day);
     };
@@ -344,117 +351,171 @@ const CalendarView = ({ group, user }) => {
         return !events[dateKey]?.[timeSlot] && !isBusyFromMemberCalendars(dateKey, timeSlot);
     };
 
+    // New handlers for bucket list functionality
+    const toggleViewMode = () => {
+        setViewMode(viewMode === 'calendar' ? 'bucketList' : 'calendar');
+    };
+
+    const handleFindTimes = (bucketItem) => {
+        setSelectedBucketItem(bucketItem);
+        setShowFindTimes(true);
+    };
+
+    const handleCloseFindTimes = () => {
+        setShowFindTimes(false);
+    };
+
+    const handleScheduleEvent = (scheduledItem) => {
+        console.log('Event scheduled:', scheduledItem);
+        setShowFindTimes(false);
+        // Optionally switch back to calendar view to show the newly scheduled event
+        setViewMode('calendar');
+    };
+
     if (!group) {
         return <div className="no-group-message">Please select a group to view the calendar.</div>;
     }
 
     return (
         <div className="calendar-container">
-            <div className="calendar-header">
-                <button className="arrow-btn" onClick={() => changeMonth(-1)}>◀</button>
-                <div className="month-dropdown-container">
-                    <h2 onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)} style={{ cursor: "pointer" }}>
-                        {currentDate.toLocaleString("default", { month: "long", year: "numeric" })} - {getGroupName()} ▼
-                    </h2>
-                    {isMonthDropdownOpen && (
-                        <div className="month-dropdown">
-                            {months.map((month, index) => (
-                                <div
-                                    key={month}
-                                    className="month-option"
-                                    onClick={() => handleMonthSelect(index)}
-                                >
-                                    {month} {currentDate.getFullYear()}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-                <button className="arrow-btn" onClick={() => changeMonth(1)}>▶</button>
-                <button
-                    className={`find-free-time-btn ${showingFreeTime ? "active" : ""}`}
-                    onClick={toggleFreeTimeView}
+            <div className="view-mode-toggle">
+                <button 
+                    className={`toggle-btn ${viewMode === 'calendar' ? 'active' : ''}`}
+                    onClick={() => setViewMode('calendar')}
                 >
-                    {showingFreeTime ? "Hide Free Time" : "Find Free Time"}
+                    Calendar
+                </button>
+                <button 
+                    className={`toggle-btn ${viewMode === 'bucketList' ? 'active' : ''}`}
+                    onClick={() => setViewMode('bucketList')}
+                >
+                    Bucket List
                 </button>
             </div>
 
-            {isLoading && <div className="loading">Loading calendar data...</div>}
-
-            {!selectedDate && !isLoading && (
-                <div className="month-view">
-                    <div className="weekdays">
-                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                            <div key={day} className="weekday">{day}</div>
-                        ))}
-                    </div>
-                    <div className="days-grid">
-                        {Array.from({ length: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay() }, (_, i) => (
-                            <div key={`empty-${i}`} className="empty-day"></div>
-                        ))}
-                        {Array.from({ length: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate() }, (_, i) => (
-                            <div key={i} className="day" onClick={() => handleDayClick(i + 1)}>
-                                {i + 1}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {selectedDate && !isLoading && (
-                <div className="day-view">
-                    <h3>{currentDate.toLocaleString("default", { month: "long" })} {selectedDate}</h3>
-                    <button className="back-btn" onClick={() => setSelectedDate(null)}>⬅ Back</button>
-
-                    <div className="hourly-grid">
-                        {timeSlots.map((slot, index) => {
-                            const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`;
-                            const event = events[dateKey]?.[slot];
-                            const isBusyFromCalendar = isBusyFromMemberCalendars(dateKey, slot);
-                            const busyMembers = getBusyMembers(dateKey, slot);
-                            const isFree = showingFreeTime && isSlotFree(dateKey, slot);
-                            
-                            return (
-                                <div 
-                                    key={index} 
-                                    className={`hour-slot ${event ? 'booked' : ''} ${isBusyFromCalendar ? 'calendar-busy' : ''} ${isFree ? 'free' : ''}`} 
-                                    onClick={() => handleSlotClick(slot)}
-                                >
-                                    <div className="slot-time">{slot}</div>
-                                    {event && (
-                                        <div className="event-details">
-                                            <div className="event-title">{event.title}</div>
-                                            <div className="event-creator">Created by: {event.user}</div>
+            {viewMode === 'calendar' ? (
+                <>
+                    <div className="calendar-header">
+                        <button className="arrow-btn" onClick={() => changeMonth(-1)}>◀</button>
+                        <div className="month-dropdown-container">
+                            <h2 onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)} style={{ cursor: "pointer" }}>
+                                {currentDate.toLocaleString("default", { month: "long", year: "numeric" })} - {getGroupName()} ▼
+                            </h2>
+                            {isMonthDropdownOpen && (
+                                <div className="month-dropdown">
+                                    {months.map((month, index) => (
+                                        <div
+                                            key={month}
+                                            className="month-option"
+                                            onClick={() => handleMonthSelect(index)}
+                                        >
+                                            {month} {currentDate.getFullYear()}
                                         </div>
-                                    )}
-                                    {!event && isBusyFromCalendar && (
-                                        <div className="busy-details">
-                                            <div className="busy-title">Busy</div>
-                                            <div className="busy-members">
-                                                {busyMembers.length === 1 
-                                                    ? `${busyMembers[0].displayName} is busy` 
-                                                    : `${busyMembers.length} members are busy`}
-                                            </div>
-                                        </div>
-                                    )}
-                                    {isFree && <div className="free-indicator">Available</div>}
+                                    ))}
                                 </div>
-                            );
-                        })}
+                            )}
+                        </div>
+                        <button className="arrow-btn" onClick={() => changeMonth(1)}>▶</button>
+                        <button
+                            className={`find-free-time-btn ${showingFreeTime ? "active" : ""}`}
+                            onClick={toggleFreeTimeView}
+                        >
+                            {showingFreeTime ? "Hide Free Time" : "Find Free Time"}
+                        </button>
                     </div>
 
-                    {selectedSlot && (
-                        <div className="event-input-container">
-                            <h4>Adding Event for {selectedSlot}</h4>
-                            <input 
-                                type="text" 
-                                placeholder="Event title..." 
-                                value={eventInput} 
-                                onChange={(e) => setEventInput(e.target.value)}
-                            />
-                            <button onClick={handleAddEvent}>Add Event</button>
+                    {isLoading && <div className="loading">Loading calendar data...</div>}
+
+                    {!selectedDate && !isLoading && (
+                        <div className="month-view">
+                            <div className="weekdays">
+                                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                                    <div key={day} className="weekday">{day}</div>
+                                ))}
+                            </div>
+                            <div className="days-grid">
+                                {Array.from({ length: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay() }, (_, i) => (
+                                    <div key={`empty-${i}`} className="empty-day"></div>
+                                ))}
+                                {Array.from({ length: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate() }, (_, i) => (
+                                    <div key={i} className="day" onClick={() => handleDayClick(i + 1)}>
+                                        {i + 1}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
+
+                    {selectedDate && !isLoading && (
+                        <div className="day-view">
+                            <h3>{currentDate.toLocaleString("default", { month: "long" })} {selectedDate}</h3>
+                            <button className="back-btn" onClick={() => setSelectedDate(null)}>⬅ Back</button>
+
+                            <div className="hourly-grid">
+                                {timeSlots.map((slot, index) => {
+                                    const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`;
+                                    const event = events[dateKey]?.[slot];
+                                    const isBusyFromCalendar = isBusyFromMemberCalendars(dateKey, slot);
+                                    const busyMembers = getBusyMembers(dateKey, slot);
+                                    const isFree = showingFreeTime && isSlotFree(dateKey, slot);
+                                    
+                                    return (
+                                        <div 
+                                            key={index} 
+                                            className={`hour-slot ${event ? 'booked' : ''} ${isBusyFromCalendar ? 'calendar-busy' : ''} ${isFree ? 'free' : ''}`} 
+                                            onClick={() => handleSlotClick(slot)}
+                                        >
+                                            <div className="slot-time">{slot}</div>
+                                            {event && (
+                                                <div className="event-details">
+                                                    <div className="event-title">{event.title}</div>
+                                                    <div className="event-creator">Created by: {event.user}</div>
+                                                </div>
+                                            )}
+                                            {!event && isBusyFromCalendar && (
+                                                <div className="busy-details">
+                                                    <div className="busy-title">Busy</div>
+                                                    <div className="busy-members">
+                                                        {busyMembers.length === 1 
+                                                            ? `${busyMembers[0].displayName} is busy` 
+                                                            : `${busyMembers.length} members are busy`}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {isFree && <div className="free-indicator">Available</div>}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {selectedSlot && (
+                                <div className="event-input-container">
+                                    <h4>Adding Event for {selectedSlot}</h4>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Event title..." 
+                                        value={eventInput} 
+                                        onChange={(e) => setEventInput(e.target.value)}
+                                    />
+                                    <button onClick={handleAddEvent}>Add Event</button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </>
+            ) : (
+                <BucketListView group={group} user={user} onFindTimes={handleFindTimes} />
+            )}
+
+            {showFindTimes && selectedBucketItem && (
+                <div className="modal-overlay">
+                    <FindFreeTimes 
+                        group={group} 
+                        bucketItem={selectedBucketItem} 
+                        user={user}
+                        onClose={handleCloseFindTimes}
+                        onScheduleEvent={handleScheduleEvent}
+                    />
                 </div>
             )}
         </div>

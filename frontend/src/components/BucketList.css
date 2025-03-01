@@ -1,0 +1,325 @@
+/* BucketList.css */
+.bucket-list-container {
+  margin: 20px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.bucket-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.bucket-list-header h2 {
+  margin: 0;
+  color: #333;
+}
+
+.add-bucket-item-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.add-bucket-item-btn:hover {
+  background-color: #45a049;
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.success-message {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.add-bucket-form {
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.add-bucket-form h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #555;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 5px;
+  color: #777;
+  font-size: 12px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.submit-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.cancel-btn {
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.submit-btn:hover {
+  background-color: #45a049;
+}
+
+.cancel-btn:hover {
+  background-color: #eee;
+}
+
+.bucket-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.bucket-item {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+}
+
+.bucket-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bucket-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.item-title-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.item-title-container h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.status-tag {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.status-tag.proposed {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-tag.voting {
+  background-color: #fff8e1;
+  color: #ff8f00;
+}
+
+.status-tag.scheduled {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-tag.completed {
+  background-color: #efebe9;
+  color: #5d4037;
+}
+
+.threshold-reached-badge {
+  background-color: #fff8e1;
+  color: #ff8f00;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.bucket-item-description {
+  margin-bottom: 10px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.bucket-item-details {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 15px;
+  font-size: 13px;
+  color: #777;
+}
+
+.bucket-item-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.find-times-btn {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.find-times-btn:hover {
+  background-color: #1976d2;
+}
+
+.find-times-btn:disabled {
+  background-color: #bdbdbd;
+  cursor: not-allowed;
+}
+
+.edit-btn {
+  background-color: #f5f5f5;
+  color: #555;
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.edit-btn:hover {
+  background-color: #eee;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 30px;
+  color: #777;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border: 1px dashed #ddd;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+/* Voting Controls */
+.voting-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.vote-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.vote-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.vote-btn.upvote {
+  color: #555;
+}
+
+.vote-btn.downvote {
+  color: #555;
+}
+
+.vote-btn.upvote.active {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-color: #c8e6c9;
+}
+
+.vote-btn.downvote.active {
+  background-color: #ffebee;
+  color: #c62828;
+  border-color: #ffcdd2;
+}
+
+.vote-icon {
+  font-size: 16px;
+}
+
+.vote-count {
+  font-weight: 600;
+}
