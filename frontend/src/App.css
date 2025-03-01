@@ -319,33 +319,21 @@
 }
 
 .right-sidebar button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 80%;
-  padding: 0.5rem;
-  margin: 0.5rem auto;
-  border-radius: 8px;
-  position: relative;
-  font-size: 2rem;
-  text-align: center;
-  background: #427294;
+  font-size: 1.5rem;
+  background: none;
   border: none;
   cursor: pointer;
-  color: white;
+  margin: 13px;
+  color: #fcfcfc;
   transition: all 0.2s;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  min-width: 90px;
+  padding: 10px;
 }
 
 .right-sidebar button:hover {
   color: #fff;
   transform: scale(1.1);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-}
-
-.google-sync * {
-  font-size: 1.3rem !important;
+  padding: 10px, 10px;
 }
 
 /* Panel Content */
@@ -926,7 +914,7 @@
   border-color: #4A9A89;
 }
 
-/* Create Button */
+/* Create Button 
 .panel-content button {
   padding: 0.75rem 1.5rem;
   background-color: #56C1B1;
@@ -947,7 +935,219 @@
 
 .panel-content button:hover:not(:disabled) {
   background-color: #4A9A89;
+} */
+
+/* Create Group Section */
+/* Create Group Container */
+.create-group-container {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  max-width: 600px;
+  margin: auto;
 }
+
+/* Friends List - Boxes */
+.friend-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+/* Individual Friend Box */
+.friend-item {
+  background: #f0f4f8;
+  padding: 0.7rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  font-size: 1rem;
+  border: 2px solid transparent;
+  text-align: center;
+}
+
+.friend-item:hover {
+  background: #dde9f5;
+  border-color: #1c3b57;
+  transform: scale(1.05);
+}
+
+/* Selected Friends Container */
+.selected-friends {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #eaf3ff;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Selected Friend Box */
+.selected-friend {
+  background: #007bff;
+  color: white;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.selected-friend:hover {
+  background: #0056b3;
+  transform: scale(1.05);
+}
+
+/* Close Button (for removing selected friends) */
+.selected-friend .remove-btn {
+  font-size: 1rem;
+  font-weight: bold;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* Inbox */
+/* Inbox Container - Improved */
+.inbox-container {
+  background: linear-gradient(145deg, #e6ecf3, #ffffff);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  max-width: 600px;
+  width: 100%;
+  margin: auto;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.inbox-container:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Inbox Header */
+.inbox-container h2 {
+  font-size: 1.85rem;
+  color: #1c3b57;
+  text-align: center;
+  margin-bottom: 1.2rem;
+  font-weight: bold;
+}
+
+/* Section Titles */
+.inbox-section h3 {
+  font-size: 1.3rem;
+  color: #23395B;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #8EA8C3;
+  padding-bottom: 0.5rem;
+}
+
+/* Notification List */
+.notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* Notification Item - Improved */
+.notification-item {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid #8EA8C3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.notification-item:hover {
+  background-color: #f7fbff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Notification Text */
+.notification-title {
+  font-size: 1.1rem;
+  color: #1c3b57;
+  font-weight: bold;
+}
+
+.notification-time {
+  font-size: 0.85rem;
+  color: #6c7d95;
+}
+
+/* Notification Buttons */
+.notification-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.notification-btn {
+  padding: 0.5rem 1.2rem;
+  border: none;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Accept Button */
+.accept-btn {
+  background-color: #28a745;
+  color: white;
+  font-weight: bold;
+}
+
+.accept-btn:hover {
+  background-color: #218838;
+  transform: scale(1.05);
+}
+
+/* Reject Button */
+.reject-btn {
+  background-color: #dc3545;
+  color: white;
+  font-weight: bold;
+}
+
+.reject-btn:hover {
+  background-color: #c82333;
+  transform: scale(1.05);
+}
+
+/* Scrollbar Styling */
+.notification-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background: #8EA8C3;
+  border-radius: 10px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: #f0f4f8;
+  border-radius: 10px;
+}
+
+
 
 /* SCROLLBAR */
 ::-webkit-scrollbar {
@@ -986,3 +1186,4 @@
 ::-webkit-scrollbar-thumb-horizontal:hover {
   background: #0056b3;
 }
+

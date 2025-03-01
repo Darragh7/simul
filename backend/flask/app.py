@@ -250,12 +250,11 @@ def api_disconnect_calendar():
     user_email = session.get('user_email')
     
     try:
-        # Remove calendar data from user record
+        # Update user record to mark calendar as disconnected, but keep the busy periods
         user_ref = db.collection('users').document(user_email)
         user_ref.update({
             'googleCalendarConnected': False,
-            'busyPeriods': firestore.DELETE_FIELD,
-            'lastCalendarSync': firestore.DELETE_FIELD
+            'calendarDisconnectedAt': datetime.utcnow().isoformat()
         })
         
         # Remove credentials from session
@@ -271,9 +270,37 @@ def api_disconnect_calendar():
 
 @app.route("/logout", methods=["POST"])
 def logout():
-    # Clear the session
-    session.clear()
-    return jsonify({"success": True, "message": "Logged out successfully"})
+    """Logout user and disconnect their Google Calendar"""
+    try:
+        # Get user email from session before clearing it
+        user_email = session.get('user_email')
+        
+        # If user is logged in, revoke Google Calendar access
+        if user_email:
+            # First, check if credentials exist in session
+            if 'credentials' in session:
+                try:
+                    # We don't actually revoke the token since that would require
+                    # an API call to Google and the user would need to re-authorize
+                    # the next time. Instead, we just mark it as disconnected in our DB.
+                    user_ref = db.collection('users').document(user_email)
+                    user_ref.update({
+                        'googleCalendarConnected': False,
+                        'lastCalendarSync': firestore.SERVER_TIMESTAMP
+                    })
+                    print(f"Marked Google Calendar as disconnected for user {user_email}")
+                except Exception as e:
+                    print(f"Error disconnecting calendar on logout: {e}")
+        
+        # Clear the session regardless of whether calendar disconnect succeeded
+        session.clear()
+        
+        return jsonify({"success": True, "message": "Logged out successfully and calendar disconnected"})
+    except Exception as e:
+        print(f"Error during logout: {e}")
+        # Still try to clear the session even if there was an error
+        session.clear()
+        return jsonify({"success": True, "message": "Logged out but there was an issue with calendar disconnection"})
 
 # Helper functions
 def credentials_to_dict(credentials):
@@ -340,7 +367,7 @@ def fetch_calendar_events(credentials, start_date, end_date):
         raise
 
 def sync_calendar_data(credentials, user_email):
-    """Sync user's calendar data with Firebase without using collection group queries"""
+    """Sync user's calendar data with Firebase - ensuring persistence"""
     try:
         if not db:
             print("Warning: Firestore database unavailable, skipping calendar sync")
@@ -360,45 +387,46 @@ def sync_calendar_data(credentials, user_email):
                 busy_periods.append({
                     'start': event['start'],
                     'end': event['end'],
-                    'title': "Busy"  # Don't include the actual event title for privacy
+                    'title': "Busy",  # Privacy-focused title
+                    'source': "google",
+                    'lastUpdated': datetime.utcnow().isoformat()
                 })
         
-        # Get user's current groups from a different collection
-        # This avoids collection group queries by using a dedicated collection
-        try:
-            # Check if we have a user_groups collection for this user
-            user_groups_ref = db.collection('user_groups').document(user_email)
-            user_groups_doc = user_groups_ref.get()
-            
-            groups = []
-            if user_groups_doc.exists:
-                user_groups_data = user_groups_doc.to_dict()
-                groups = user_groups_data.get('groups', [])
-            else:
-                # If we don't have a record yet, default to empty list
-                user_groups_ref.set({
-                    'email': user_email,
-                    'groups': []
-                })
-        except Exception as e:
-            print(f"Warning: Could not get user groups: {e}")
-            groups = []
-        
-        # Update user record in Firebase
+        # Update user record in Firebase with busy periods
+        # Use merge=True to ensure we don't overwrite other fields
         user_ref = db.collection('users').document(user_email)
-        user_ref.set({
-            'email': user_email,
-            'googleCalendarConnected': True,
-            'busyPeriods': busy_periods,
-            'lastCalendarSync': datetime.utcnow().isoformat()
-        }, merge=True)
         
-        # Try to update availability in groups
-        try:
-            for group_id in groups:
-                update_user_availability_in_group(user_email, group_id)
-        except Exception as e:
-            print(f"Warning: Could not update all group availability: {e}")
+        # Check if the user document already exists
+        user_doc = user_ref.get()
+        if user_doc.exists:
+            # Update the document with merge to preserve other fields
+            user_ref.update({
+                'googleCalendarConnected': True,
+                'busyPeriods': busy_periods,
+                'lastCalendarSync': datetime.utcnow().isoformat()
+            })
+        else:
+            # Create a new document
+            user_ref.set({
+                'email': user_email,
+                'googleCalendarConnected': True,
+                'busyPeriods': busy_periods,
+                'lastCalendarSync': datetime.utcnow().isoformat(),
+                'createdAt': datetime.utcnow().isoformat()
+            })
+        
+        # Get all groups the user is a member of
+        user_groups_ref = db.collection('user_groups').document(user_email)
+        user_groups_doc = user_groups_ref.get()
+        
+        groups = []
+        if user_groups_doc.exists:
+            user_groups_data = user_groups_doc.to_dict()
+            groups = user_groups_data.get('groups', [])
+        
+        # Log debug information
+        print(f"User {user_email} is a member of {len(groups)} groups")
+        print(f"Synced {len(busy_periods)} busy periods for user {user_email}")
         
         return True
     except Exception as e:
@@ -432,101 +460,46 @@ def update_all_group_availability(user_email):
         print(f"Error updating all group availability: {e}")
 
 def update_user_availability_in_group(user_email, group_id):
-    """Update a user's availability in a specific group"""
+    """
+    This function is simplified in Option 1 since we don't store busy periods in groups
+    Just ensure the user is a member of the group
+    """
     try:
-        # Get user's busy periods
+        # Check if user exists
         user_ref = db.collection('users').document(user_email)
         user_doc = user_ref.get()
         
         if not user_doc.exists:
             raise Exception(f"User {user_email} not found")
-            
-        user_data = user_doc.to_dict()
-        busy_periods = user_data.get('busyPeriods', [])
         
-        # Format busy periods as time slots for the group calendar
-        busy_slots = convert_busy_periods_to_slots(busy_periods)
-        
-        # Update the user's membership in the group with availability info
+        # Ensure user is in the group members collection
+        # but don't duplicate the busy periods
         member_ref = db.collection(f'groups/{group_id}/members').document(user_email)
         member_ref.set({
             'email': user_email,
-            'busySlots': busy_slots,
-            'displayName': user_data.get('displayName', user_email),
+            'displayName': user_doc.to_dict().get('displayName', user_email),
             'lastUpdated': datetime.utcnow().isoformat()
         }, merge=True)
         
         return True
     except Exception as e:
-        print(f"Error updating user availability in group: {e}")
+        print(f"Error updating user in group: {e}")
         raise
 
-def convert_busy_periods_to_slots(busy_periods):
-    """Convert busy periods to time slots format for the group calendar"""
-    busy_slots = {}
-    
-    for period in busy_periods:
-        # Parse the start and end times
-        if 'T' in period['start']:  # Has time component
-            start = period['start'].split('+')[0].split('Z')[0].split('.')[0]
-            end = period['end'].split('+')[0].split('Z')[0].split('.')[0]
-            start_time = datetime.fromisoformat(start)
-            end_time = datetime.fromisoformat(end)
-            # start_time = datetime.fromisoformat(period['start'].replace('Z', '+00:00'))
-            # end_time = datetime.fromisoformat(period['end'].replace('Z', '+00:00'))
-            
-            # Round to the nearest hour slots
-            current_hour = datetime(
-                start_time.year, start_time.month, start_time.day,
-                start_time.hour, 0, 0
-            )
-            
-            # Iterate through each hour slot
-            while current_hour < end_time:
-                # Create the date key (YYYY-MM-DD)
-                date_key = f"{current_hour.year}-{current_hour.month}-{current_hour.day}"
-                
-                # Create the time slot (HH:00 - (HH+1):00)
-                time_slot = f"{current_hour.hour}:00 - {current_hour.hour + 1}:00"
-                
-                # Add to busy slots
-                if date_key not in busy_slots:
-                    busy_slots[date_key] = {}
-                
-                busy_slots[date_key][time_slot] = {
-                    'busy': True,
-                    'title': "Busy (Google Calendar)",
-                    'source': 'google'
-                }
-                
-                # Move to next hour
-                current_hour += timedelta(hours=1)
-    
-    return busy_slots
-
 def find_group_free_time(group_id, start_date, end_date):
-    """Find free time slots when all group members are available"""
+    """Find free time slots when all group members are available - Option 1 implementation"""
     try:
         # Get all members in the group
-        members_ref = db.collection(f'groups/{group_id}/members')
-        members = members_ref.stream()
+        group_ref = db.collection('groups').document(group_id)
+        group_doc = group_ref.get()
         
-        # Collect all busy slots from all members
-        all_busy_slots = {}
-        
-        for member in members:
-            member_data = member.to_dict()
-            member_busy_slots = member_data.get('busySlots', {})
+        if not group_doc.exists:
+            raise Exception(f"Group {group_id} not found")
             
-            # Merge busy slots
-            for date_key, slots in member_busy_slots.items():
-                if date_key not in all_busy_slots:
-                    all_busy_slots[date_key] = {}
-                
-                for time_slot, busy_info in slots.items():
-                    all_busy_slots[date_key][time_slot] = busy_info
+        group_data = group_doc.to_dict()
+        members = group_data.get('members', [])
         
-        # Generate all possible time slots within date range
+        # Generate all possible time slots within date range (business hours)
         all_slots = {}
         current_date = start_date
         
@@ -538,26 +511,65 @@ def find_group_free_time(group_id, start_date, end_date):
             for hour in range(9, 17):
                 time_slot = f"{hour}:00 - {hour + 1}:00"
                 all_slots[date_key][time_slot] = {
-                    'free': True
+                    'free': True,
+                    'busyMembers': []
                 }
             
             current_date += timedelta(days=1)
         
-        # Remove busy slots from all slots to get free slots
-        free_slots = {}
+        # Query each user's busy periods directly from user collection
+        for member in members:
+            user_id = member.get('userId')
+            if not user_id:
+                continue
+                
+            user_ref = db.collection('users').document(user_id)
+            user_doc = user_ref.get()
+            
+            if not user_doc.exists:
+                continue
+                
+            user_data = user_doc.to_dict()
+            busy_periods = user_data.get('busyPeriods', [])
+            
+            # Check each busy period against our time slots
+            for period in busy_periods:
+                if 'T' not in period['start']:  # Skip all-day events
+                    continue
+                    
+                # Parse the start and end times
+                start = period['start'].split('+')[0].split('Z')[0].split('.')[0]
+                end = period['end'].split('+')[0].split('Z')[0].split('.')[0]
+                start_time = datetime.fromisoformat(start)
+                end_time = datetime.fromisoformat(end)
+                
+                # Round to the nearest hour slots
+                current_hour = datetime(
+                    start_time.year, start_time.month, start_time.day,
+                    start_time.hour, 0, 0
+                )
+                
+                # Mark slots as busy
+                while current_hour < end_time:
+                    date_key = f"{current_hour.year}-{current_hour.month}-{current_hour.day}"
+                    time_slot = f"{current_hour.hour}:00 - {current_hour.hour + 1}:00"
+                    
+                    if date_key in all_slots and time_slot in all_slots[date_key]:
+                        # Add this user to the list of busy members
+                        all_slots[date_key][time_slot]['busyMembers'].append(user_id)
+                        
+                    # Move to next hour
+                    current_hour += timedelta(hours=1)
         
+        # Filter to only free slots (where no members are busy)
+        free_slots = {}
         for date_key, slots in all_slots.items():
             free_slots[date_key] = {}
-            
             for time_slot, slot_info in slots.items():
-                if date_key in all_busy_slots and time_slot in all_busy_slots[date_key]:
-                    # This slot is busy for at least one member
-                    continue
-                
-                # This slot is free for all members
-                free_slots[date_key][time_slot] = {
-                    'free': True
-                }
+                if not slot_info['busyMembers']:  # No busy members
+                    free_slots[date_key][time_slot] = {
+                        'free': True
+                    }
         
         return free_slots
     except Exception as e:

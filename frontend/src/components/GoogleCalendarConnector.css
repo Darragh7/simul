@@ -1,145 +1,87 @@
-/* GoogleCalendarConnector.css */
-
 .google-calendar-container {
-    margin: 15px 0;
-    padding: 15px;
-    border-radius: 8px;
-    background-color: #f8f9fa;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  }
-  
-  .connect-google-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 12px 15px;
-    background-color: #4285F4;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .connect-google-btn:hover {
-    background-color: #3367D6;
-  }
-  
-  .connect-google-btn:before {
-    content: "";
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' d='M0 0h24v24H0z'/%3E%3Cpath d='M3 3h18v18H3V3zm16.5 7.5H12v4h4a4 4 0 1 1-4-4V6.5a5.5 5.5 0 1 0 5.5 5.5v-1.5z' fill='white'/%3E%3C/svg%3E");
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
-    display: inline-block;
-  }
-  
-  .calendar-connected {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .connected-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 500;
-    color: #34A853;
-  }
-  
-  .status-dot {
-    width: 10px;
-    height: 10px;
-    background-color: #34A853;
-    border-radius: 50%;
-  }
-  
-  .sync-btn {
-    padding: 10px 12px;
-    background-color: #4285F4;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .sync-btn:hover:not(:disabled) {
-    background-color: #3367D6;
-  }
-  
-  .sync-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
-  
-  .sync-btn.syncing {
-    background-color: #9AA0A6;
-  }
-  
-  .sync-btn.success {
-    background-color: #34A853;
-  }
-  
-  .sync-btn.error {
-    background-color: #EA4335;
-  }
-  
-  .last-sync {
-    font-size: 0.85em;
-    color: #5F6368;
-    margin-top: 5px;
-  }
-  
-  .disconnect-btn {
-    margin-top: 10px;
-    padding: 8px 12px;
-    background-color: transparent;
-    color: #EA4335;
-    border: 1px solid #EA4335;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .disconnect-btn:hover {
-    background-color: #FEE8E6;
-  }
-  
-  /* Hour slot styling for Google Calendar events */
-  .hour-slot.google-event {
-    background-color: #e8f0fe;
-    border-left: 4px solid #4285F4;
-  }
-  
-  .event-source {
-    font-size: 0.85em;
-    margin-top: 4px;
-    color: #4285F4;
-    font-style: italic;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  
-  .event-source:before {
-    content: "";
-    width: 12px;
-    height: 12px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' d='M0 0h24v24H0z'/%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z' fill='%234285F4'/%3E%3C/svg%3E");
-    background-size: contain;
-    display: inline-block;
-  }
-  
-  /* Loading state */
-  .calendar-connector.loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 60px;
-    color: #5F6368;
-    font-style: italic;
-  }
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 6px;
+  background: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.connect-google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px;
+  background: #4285F4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.connect-google-btn:hover {
+  background: #3367D6;
+}
+
+.calendar-connected {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.connected-status {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  color: #34A853;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: #34A853;
+  border-radius: 50%;
+}
+
+.sync-btn {
+  padding: 8px;
+  background: #4285F4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.sync-btn:hover:not(:disabled) {
+  background: #3367D6;
+}
+
+.sync-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.disconnect-btn {
+  margin-top: 8px;
+  padding: 8px;
+  background: transparent;
+  color: #EA4335;
+  border: 1px solid #EA4335;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.disconnect-btn:hover {
+  background: #FEE8E6;
+}
+
+.hour-slot.google-event {
+  background: #e8f0fe;
+  border-left: 3px solid #4285F4;
+}
+
+.event-source {
+  font-size: 0.8em;
+  color: #4285F4;
+  font-style: italic;
+}

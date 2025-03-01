@@ -28,7 +28,7 @@ const GoogleCalendarConnector = ({ groups, onSync }) => {
       
       const data = await response.json();
       setIsConnected(data.calendar_connected || false);
-      
+      console.log('Calendar status response: ', data);
       // If connected, fetch last sync time from Firestore
       if (data.calendar_connected && user) {
         const userDoc = await fetch(`${API_BASE_URL}/api/last-sync-time`, {
