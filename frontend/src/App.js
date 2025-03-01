@@ -18,6 +18,11 @@ function App() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { user, logout } = useAuth();
 
+  useEffect(() => {
+    // Clear selected group when user changes
+    setSelectedGroup(null);
+  }, [user?.email]);
+  
   // Fetch groups from Firestore
   useEffect(() => {
     if (!user?.email) return;
@@ -67,6 +72,7 @@ function App() {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
+      setSelectedGroup(null);
       await logout(); // This will call our updated logout function that disconnects calendar
       // No need for redirect as AuthContext will handle the state change
     } catch (error) {
