@@ -244,16 +244,17 @@ const acceptGroupInvite = async (requestId, groupId, groupName) => {
                   }}
                 >
                   {group.name}
+                
+                  {group.createdBy === user.email && (
+                    <button
+                      className="delete-button"
+                      onClick={() => handleDeleteGroup(group.id)}
+                      title={`Delete ${group.name}`}
+                    >
+                      ❌
+                    </button>
+                  )}
                 </button>
-                {group.createdBy === user.email && (
-                  <button
-                    className="delete-button"
-                    onClick={() => handleDeleteGroup(group.id)}
-                    title={`Delete ${group.name}`}
-                  >
-                    ❌
-                  </button>
-                )}
               </li>
             ))}
           </ul>
