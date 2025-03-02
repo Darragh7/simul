@@ -7,7 +7,7 @@ import Inbox from './components/Inbox';
 import FriendsList from './components/FriendsList';
 import { useAuth } from './components/AuthContext';
 import GoogleCalendarConnector from './components/GoogleCalendarConnector';
-import { collection, query, where, onSnapshot, doc, updateDoc, getDoc, arrayUnion, setDoc} from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, updateDoc, getDoc, arrayUnion, setDoc, deleteDoc, arrayRemove} from "firebase/firestore";
 import { db } from './firebase/firebase';
 
 function App() {
@@ -93,15 +93,36 @@ function App() {
     setActivePanel('create-group');
   };
 
-  // Delete a group (you would add Firestore delete functionality here)
-  const handleDeleteGroup = (groupId) => {
-    // This would need to be updated with Firestore delete logic
-    setGroups((prevGroups) => prevGroups.filter((group) => group.id !== groupId));
-    if (selectedGroup?.id === groupId) {
-      setSelectedGroup(null);
-      setActivePanel('calendar');
+  // Delete a group
+  const handleDeleteGroup = async (groupId, userEmail) => {
+    try {
+      // Reference to the group document
+      const groupRef = doc(db, "groups", groupId);
+      
+      // Reference to the user's group document
+      const userGroupsRef = doc(db, "user_groups", userEmail);
+
+      // Delete the group document from Firestore
+      await deleteDoc(groupRef);
+
+      // Remove groupId from the user's groups array
+      await updateDoc(userGroupsRef, {
+        groups: arrayRemove(groupId),
+      });
+  
+      // Update local state
+      setGroups((prevGroups) => prevGroups.filter((group) => group.id !== groupId));
+  
+      if (selectedGroup?.id === groupId) {
+        setSelectedGroup(null);
+        setActivePanel("calendar");
+      }
+  
+      console.log(`Group ${groupId} deleted successfully.`);
+    } catch (error) {
+      console.error("Error deleting group:", error);
     }
-  };
+  }; 
 
   // Handle accepting a friend request
   const acceptFriendRequest = async (requestId, fromEmail) => {
@@ -244,16 +265,17 @@ const acceptGroupInvite = async (requestId, groupId, groupName) => {
                   }}
                 >
                   {group.name}
+                
+                  {group.createdBy === user.email && (
+                    <button
+                      className="delete-button"
+                      onClick={() => handleDeleteGroup(group.id, user.email)}
+                      title={`Delete ${group.name}`}
+                    >
+                      ❌
+                    </button>
+                  )}
                 </button>
-                {group.createdBy === user.email && (
-                  <button
-                    className="delete-button"
-                    onClick={() => handleDeleteGroup(group.id)}
-                    title={`Delete ${group.name}`}
-                  >
-                    ❌
-                  </button>
-                )}
               </li>
             ))}
           </ul>
