@@ -661,85 +661,33 @@ const FindFreeTimes = ({ group, bucketItem, user, onClose, onScheduleEvent }) =>
         </div>
       )}
       
-      {loading ? (
-        <div className="loading">Finding free times...</div>
-      ) : (
-        <div className="free-times-results">
-          <h3>Available Times ({freeTimes.length})</h3>
-          
-          {freeTimes.length > 0 ? (
-            <div className="time-slots-list">
-              {freeTimes.map((slot, index) => {
-                // Check if this slot is already saved
-                const savedSlot = timeSlots.find(ts => 
-                  ts.date === slot.dateKey && 
-                  ts.startHour === slot.startHour && 
-                  ts.endHour === slot.endHour
-                );
-                
-                // Determine if this is the first slot of a new day
-                const isFirstSlotOfDay = index === 0 || slot.dateKey !== freeTimes[index - 1].dateKey;
-                
-                return (
-                  <React.Fragment key={`${slot.dateKey}-${slot.startHour}`}>
-                    {/* Add day header if this is the first slot of the day */}
-                    {isFirstSlotOfDay && (
-                      <div className="day-header">
-                        <h4>{formatDate(slot.date)}</h4>
-                      </div>
-                    )}
-                    
-                    <div 
-                      className={`time-slot ${getAvailabilityColorClass(slot.availability)} ${selectedTimeSlot === slot ? 'selected' : ''} ${savedSlot ? 'already-saved' : ''}`}
-                      onClick={() => setSelectedTimeSlot(slot)}
-                    >
-                      <div className="time-slot-time">
-                        {formatTime(slot.startHour)} - {formatTime(slot.endHour)}
-                      </div>
-                      <div className="time-slot-availability">
-                        <div className="availability-bar">
-                          <div 
-                            className={`availability-fill ${getAvailabilityColorClass(slot.availability)}`}
-                            style={{ width: `${slot.availability}%` }}
-                          ></div>
-                        </div>
-                        <div className="availability-text">
-                          {slot.availability}% available ({slot.availableMembers.length}/{groupMembers.length})
-                        </div>
-                      </div>
-                      
-                      {savedSlot ? (
-                        <div className="time-slot-saved">Already Suggested</div>
-                      ) : (
-                        <button 
-                          className="suggest-time-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSaveTimeSlot(slot);
-                          }}
-                        >
-                          Suggest This Time
-                        </button>
-                      )}
-                    </div>
-                  </React.Fragment>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="no-times-found">
-              <p>No free times found in the selected period. Try adjusting your search criteria.</p>
-            </div>
-          )}
-        </div>
-      )}
-      
-      {/* Show details about selected time slot */}
-      {selectedTimeSlot && (
+{/* Show details about selected time slot */}
+{selectedTimeSlot && (
         <div className="selected-time-details">
           <h3>Selected Time Details</h3>
           <div className="time-details">
-            <p><strong>Date:</strong> {formatDate(selectedTimeSlot.date || selectedTimeSlot.dateObj?.toDate())}</p>
+            <p><strong>Date:</strong> {
+  (() => {
+    // Case 1: Regular JavaScript Date object
+    if (selectedTimeSlot.date instanceof Date) {
+      return formatDate(selectedTimeSlot.date);
+    }
+    // Case 2: Firestore Timestamp
+    else if (selectedTimeSlot.dateObj && typeof selectedTimeSlot.dateObj.toDate === 'function') {
+      return formatDate(selectedTimeSlot.dateObj.toDate());
+    }
+    // Case 3: Try to parse from dateKey string
+    else if (selectedTimeSlot.dateKey) {
+      const [year, month, day] = selectedTimeSlot.dateKey.split('-').map(Number);
+      const parsedDate = new Date(year, month - 1, day); // month is 0-indexed in JS Date
+      if (!isNaN(parsedDate.getTime())) {
+        return formatDate(parsedDate);
+      }
+    }
+    // Case 4: Just show the raw dateKey if we have it
+    return selectedTimeSlot.dateKey || 'No date available';
+  })()
+}</p>
             <p><strong>Time:</strong> {formatTime(selectedTimeSlot.startHour)} - {formatTime(selectedTimeSlot.endHour)}</p>
             <p><strong>Duration:</strong> {bucketItem.durationHours} hour{bucketItem.durationHours !== 1 ? 's' : ''}</p>
             <p><strong>Availability:</strong> {selectedTimeSlot.availability}% of group members</p>
@@ -825,6 +773,80 @@ const FindFreeTimes = ({ group, bucketItem, user, onClose, onScheduleEvent }) =>
           </div>
         </div>
       )}
+
+      {loading ? (
+        <div className="loading">Finding free times...</div>
+      ) : (
+        <div className="free-times-results">
+          <h3>Available Times ({freeTimes.length})</h3>
+          
+          {freeTimes.length > 0 ? (
+            <div className="time-slots-list">
+              {freeTimes.map((slot, index) => {
+                // Check if this slot is already saved
+                const savedSlot = timeSlots.find(ts => 
+                  ts.date === slot.dateKey && 
+                  ts.startHour === slot.startHour && 
+                  ts.endHour === slot.endHour
+                );
+                
+                // Determine if this is the first slot of a new day
+                const isFirstSlotOfDay = index === 0 || slot.dateKey !== freeTimes[index - 1].dateKey;
+                
+                return (
+                  <React.Fragment key={`${slot.dateKey}-${slot.startHour}`}>
+                    {/* Add day header if this is the first slot of the day */}
+                    {isFirstSlotOfDay && (
+                      <div className="day-header">
+                        <h4>{formatDate(slot.date)}</h4>
+                      </div>
+                    )}
+                    
+                    <div 
+                      className={`time-slot ${getAvailabilityColorClass(slot.availability)} ${selectedTimeSlot === slot ? 'selected' : ''} ${savedSlot ? 'already-saved' : ''}`}
+                      onClick={() => setSelectedTimeSlot(slot)}
+                    >
+                      <div className="time-slot-time">
+                        {formatTime(slot.startHour)} - {formatTime(slot.endHour)}
+                      </div>
+                      <div className="time-slot-availability">
+                        <div className="availability-bar">
+                          <div 
+                            className={`availability-fill ${getAvailabilityColorClass(slot.availability)}`}
+                            style={{ width: `${slot.availability}%` }}
+                          ></div>
+                        </div>
+                        <div className="availability-text">
+                          {slot.availability}% available ({slot.availableMembers.length}/{groupMembers.length})
+                        </div>
+                      </div>
+                      
+                      {savedSlot ? (
+                        <div className="time-slot-saved">Already Suggested</div>
+                      ) : (
+                        <button 
+                          className="suggest-time-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSaveTimeSlot(slot);
+                          }}
+                        >
+                          Suggest This Time
+                        </button>
+                      )}
+                    </div>
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="no-times-found">
+              <p>No free times found in the selected period. Try adjusting your search criteria.</p>
+            </div>
+          )}
+        </div>
+      )}
+      
     </div>
   );
 };
