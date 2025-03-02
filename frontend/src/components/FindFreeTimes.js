@@ -575,44 +575,47 @@ const FindFreeTimes = ({ group, bucketItem, user, onClose, onScheduleEvent }) =>
       </div>
       
       <div className="find-times-settings">
-        <div className="form-group">
-          <label htmlFor="searchStartDate">Start Date:</label>
-          <input
-            type="date"
-            id="searchStartDate"
-            name="searchStartDate"
-            value={searchStartDate}
-            onChange={handleSearchChange}
-            min={new Date().toISOString().split('T')[0]}
-          />
-        </div>
+  <div className="form-group">
+    <label htmlFor="searchStartDate">Start Date:</label>
+    <input
+      type="date"
+      id="searchStartDate"
+      name="searchStartDate"
+      value={searchStartDate}
+      onChange={handleSearchChange}
+      min={new Date().toISOString().split('T')[0]}
+    />
+  </div>
+  
+  <div className="form-group">
+    <label htmlFor="searchDays">Search Range (days):</label>
+    <input
+      type="number"
+      id="searchDays"
+      name="searchDays"
+      value={searchDays}
+      onChange={handleSearchChange}
+      min="1"
+      max="60"
+    />
+  </div>
+  
+  <div className="form-group">
+    <div className="form-group checkbox">
+      <input
+        type="checkbox"
+        id="businessHoursOnly"
+        name="businessHoursOnly"
+        checked={businessHoursOnly}
+        onChange={handleSearchChange}
+      />
+      <label htmlFor="businessHoursOnly">Business Hours Only (9 AM - 5 PM, weekdays)</label>
+    </div>
+    
+    <button className="search-btn" onClick={findAvailableTimes}>Search</button>
+  </div>
+</div>
         
-        <div className="form-group">
-          <label htmlFor="searchDays">Search Range (days):</label>
-          <input
-            type="number"
-            id="searchDays"
-            name="searchDays"
-            value={searchDays}
-            onChange={handleSearchChange}
-            min="1"
-            max="60"
-          />
-        </div>
-        
-        <div className="form-group checkbox">
-          <input
-            type="checkbox"
-            id="businessHoursOnly"
-            name="businessHoursOnly"
-            checked={businessHoursOnly}
-            onChange={handleSearchChange}
-          />
-          <label htmlFor="businessHoursOnly">Business Hours Only (9 AM - 5 PM, weekdays)</label>
-        </div>
-        
-        <button className="search-btn" onClick={findAvailableTimes}>Search</button>
-      </div>
       
       {error && <div className="error-message">{error}</div>}
       
