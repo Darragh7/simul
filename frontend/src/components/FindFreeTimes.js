@@ -26,7 +26,7 @@ const FindFreeTimes = ({ group, bucketItem, user, onClose, onScheduleEvent }) =>
   const [searchStartDate, setSearchStartDate] = useState(
     new Date(new Date().setHours(0, 0, 0, 0)).toISOString().split('T')[0]
   );
-  const [businessHoursOnly, setBusinessHoursOnly] = useState(false);
+  const [businessHoursOnly, setBusinessHoursOnly] = useState(false); // Default to unchecked
   const [timeSlots, setTimeSlots] = useState([]); // Stored time slots with votes
   const [groupMembers, setGroupMembers] = useState([]);
   const [confirmingEvent, setConfirmingEvent] = useState(false);
@@ -140,7 +140,7 @@ const FindFreeTimes = ({ group, bucketItem, user, onClose, onScheduleEvent }) =>
       const durationHours = bucketItem.durationHours || 2;
       
       while (currentDate < endDateObj) {
-        const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
+        const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
         const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 6 = Saturday
         
         // Skip weekends if business hours only is selected
@@ -241,13 +241,43 @@ const FindFreeTimes = ({ group, bucketItem, user, onClose, onScheduleEvent }) =>
         currentDate.setDate(currentDate.getDate() + 1);
       }
       
-      // Sort by availability (high to low) and then by date (earliest first)
-      possibleTimes.sort((a, b) => {
-        if (b.availability !== a.availability) return b.availability - a.availability;
-        return a.date - b.date;
+      // Group possible times by day first, then sort by availability within each day
+      const groupedByDay = {};
+      possibleTimes.forEach(timeSlot => {
+        if (!groupedByDay[timeSlot.dateKey]) {
+          groupedByDay[timeSlot.dateKey] = [];
+        }
+        groupedByDay[timeSlot.dateKey].push(timeSlot);
       });
       
-      setFreeTimes(possibleTimes);
+      // Sort each day's slots by availability (high to low)
+      Object.keys(groupedByDay).forEach(dateKey => {
+        groupedByDay[dateKey].sort((a, b) => b.availability - a.availability);
+      });
+      
+      // Convert back to a single array, ordered by date (chronologically)
+      const sortedTimes = [];
+      Object.keys(groupedByDay)
+        .sort((a, b) => {
+          // Parse the date strings into actual Date objects for proper comparison
+          const [yearA, monthA, dayA] = a.split('-').map(Number);
+          const [yearB, monthB, dayB] = b.split('-').map(Number);
+          
+          // Create Date objects (months are 0-indexed in JavaScript Date)
+          const dateA = new Date(yearA, monthA - 1, dayA);
+          const dateB = new Date(yearB, monthB - 1, dayB);
+          
+          // Compare dates
+          return dateA - dateB;
+        })
+        .forEach(dateKey => {
+          // Add each day's time slots
+          if (groupedByDay[dateKey].length > 0) {
+            sortedTimes.push(...groupedByDay[dateKey]);
+          }
+        });
+      
+      setFreeTimes(sortedTimes);
     } catch (error) {
       console.error('Error finding free times:', error);
       setError('Failed to find free times. Please try again.');
@@ -647,42 +677,52 @@ const FindFreeTimes = ({ group, bucketItem, user, onClose, onScheduleEvent }) =>
                   ts.endHour === slot.endHour
                 );
                 
+                // Determine if this is the first slot of a new day
+                const isFirstSlotOfDay = index === 0 || slot.dateKey !== freeTimes[index - 1].dateKey;
+                
                 return (
-                  <div 
-                    key={index} 
-                    className={`time-slot ${getAvailabilityColorClass(slot.availability)} ${selectedTimeSlot === slot ? 'selected' : ''} ${savedSlot ? 'already-saved' : ''}`}
-                    onClick={() => setSelectedTimeSlot(slot)}
-                  >
-                    <div className="time-slot-date">{formatDate(slot.date)}</div>
-                    <div className="time-slot-time">
-                      {formatTime(slot.startHour)} - {formatTime(slot.endHour)}
-                    </div>
-                    <div className="time-slot-availability">
-                      <div className="availability-bar">
-                        <div 
-                          className={`availability-fill ${getAvailabilityColorClass(slot.availability)}`}
-                          style={{ width: `${slot.availability}%` }}
-                        ></div>
+                  <React.Fragment key={`${slot.dateKey}-${slot.startHour}`}>
+                    {/* Add day header if this is the first slot of the day */}
+                    {isFirstSlotOfDay && (
+                      <div className="day-header">
+                        <h4>{formatDate(slot.date)}</h4>
                       </div>
-                      <div className="availability-text">
-                        {slot.availability}% available ({slot.availableMembers.length}/{groupMembers.length})
-                      </div>
-                    </div>
-                    
-                    {savedSlot ? (
-                      <div className="time-slot-saved">Already Suggested</div>
-                    ) : (
-                      <button 
-                        className="suggest-time-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSaveTimeSlot(slot);
-                        }}
-                      >
-                        Suggest This Time
-                      </button>
                     )}
-                  </div>
+                    
+                    <div 
+                      className={`time-slot ${getAvailabilityColorClass(slot.availability)} ${selectedTimeSlot === slot ? 'selected' : ''} ${savedSlot ? 'already-saved' : ''}`}
+                      onClick={() => setSelectedTimeSlot(slot)}
+                    >
+                      <div className="time-slot-time">
+                        {formatTime(slot.startHour)} - {formatTime(slot.endHour)}
+                      </div>
+                      <div className="time-slot-availability">
+                        <div className="availability-bar">
+                          <div 
+                            className={`availability-fill ${getAvailabilityColorClass(slot.availability)}`}
+                            style={{ width: `${slot.availability}%` }}
+                          ></div>
+                        </div>
+                        <div className="availability-text">
+                          {slot.availability}% available ({slot.availableMembers.length}/{groupMembers.length})
+                        </div>
+                      </div>
+                      
+                      {savedSlot ? (
+                        <div className="time-slot-saved">Already Suggested</div>
+                      ) : (
+                        <button 
+                          className="suggest-time-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSaveTimeSlot(slot);
+                          }}
+                        >
+                          Suggest This Time
+                        </button>
+                      )}
+                    </div>
+                  </React.Fragment>
                 );
               })}
             </div>

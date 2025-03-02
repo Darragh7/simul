@@ -1,417 +1,440 @@
 /* FindFreeTimes.css */
 .find-times-container {
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    width: 90%;
-    max-width: 900px;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-  }
-  
-  .find-times-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid #eee;
-    position: sticky;
-    top: 0;
-    background-color: #fff;
-    z-index: 10;
-    border-radius: 10px 10px 0 0;
-  }
-  
-  .find-times-header h2 {
-    margin: 0;
-    color: #333;
-    font-size: 1.5rem;
-  }
-  
-  .close-btn {
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: #777;
-    cursor: pointer;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-  }
-  
-  .close-btn:hover {
-    background-color: #f5f5f5;
-    color: #333;
-  }
-  
-  .find-times-settings {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    padding: 20px;
-    background-color: #f9f9f9;
-  }
-  
-  .form-group {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .form-group label {
-    margin-bottom: 5px;
-    font-weight: 600;
-    color: #555;
-  }
-  
-  .form-group input {
-    padding: 8px 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-  
-  .form-group.checkbox {
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .form-group.checkbox input {
-    margin: 0;
-  }
-  
-  .search-btn {
-    background-color: #2196f3;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-    margin-top: auto;
-  }
-  
-  .search-btn:hover {
-    background-color: #1976d2;
-  }
-  
-  .error-message {
-    background-color: #ffebee;
-    color: #c62828;
-    padding: 10px 20px;
-    margin: 10px 20px;
-    border-radius: 4px;
-  }
-  
-  .loading {
-    text-align: center;
-    padding: 20px;
-    color: #666;
-  }
-  
-  .free-times-results, .saved-time-slots {
-    padding: 20px;
-  }
-  
-  .free-times-results h3, .saved-time-slots h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    color: #333;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .time-slots-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  
-  .time-slot {
-    display: grid;
-    grid-template-columns: 120px 150px 1fr auto;
-    align-items: center;
-    padding: 15px;
-    background-color: #f5f5f5;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border-left: 5px solid transparent;
-  }
-  
-  .time-slot:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .time-slot.selected {
-    background-color: #e8f5e9;
-    border-left-color: #4caf50;
-  }
-  
-  .time-slot.already-saved {
-    background-color: #e3f2fd;
-    border-left-color: #2196f3;
-  }
-  
-  /* Availability color indicators */
-  .time-slot.high-availability, .saved-time-slot.high-availability {
-    border-left-color: #4caf50;
-  }
-  
-  .time-slot.medium-availability, .saved-time-slot.medium-availability {
-    border-left-color: #ffeb3b;
-  }
-  
-  .time-slot.low-availability, .saved-time-slot.low-availability {
-    border-left-color: #ff9800;
-  }
-  
-  .time-slot.very-low-availability, .saved-time-slot.very-low-availability {
-    border-left-color: #f44336;
-  }
-  
-  .time-slot-date {
-    font-weight: 600;
-    color: #333;
-  }
-  
-  .time-slot-time {
-    color: #555;
-  }
-  
-  .time-slot-availability {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-  
-  .availability-bar {
-    height: 8px;
-    background-color: #eee;
-    border-radius: 4px;
-    overflow: hidden;
-    width: 100%;
-  }
-  
-  .availability-fill {
-    height: 100%;
-    border-radius: 4px;
-  }
-  
-  .availability-fill.high-availability {
-    background-color: #4caf50;
-  }
-  
-  .availability-fill.medium-availability {
-    background-color: #ffeb3b;
-  }
-  
-  .availability-fill.low-availability {
-    background-color: #ff9800;
-  }
-  
-  .availability-fill.very-low-availability {
-    background-color: #f44336;
-  }
-  
-  .availability-text {
-    font-size: 13px;
-    color: #666;
-  }
-  
-  .suggest-time-btn, .vote-btn {
-    background-color: #2196f3;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background-color 0.2s;
-    white-space: nowrap;
-  }
-  
-  .suggest-time-btn:hover, .vote-btn:hover {
-    background-color: #1976d2;
-  }
-  
-  .vote-btn.voted {
-    background-color: #4caf50;
-  }
-  
-  .time-slot-saved {
-    color: #1976d2;
-    font-weight: 600;
-  }
-  
-  .no-times-found {
-    text-align: center;
-    padding: 30px;
-    color: #777;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    border: 1px dashed #ddd;
-  }
-  
-  /* Time Slots Grid Layout */
-  .time-slots-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-  }
-  
-  .saved-time-slot {
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border-left: 5px solid transparent;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    position: relative;
-  }
-  
-  .saved-time-slot:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .saved-time-slot.selected {
-    background-color: #e8f5e9;
-  }
-  
-  .saved-time-slot.threshold-reached {
-    border: 2px solid #4caf50;
-  }
-  
-  .threshold-badge {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    background-color: #4caf50;
-    color: white;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 5px 10px;
-    border-radius: 20px;
-  }
-  
-  .time-slot-votes {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 5px;
-  }
-  
-  .votes-count {
-    font-weight: 600;
-    color: #555;
-  }
-  
-  /* Selected Time Details */
-  .selected-time-details {
-    padding: 20px;
-    background-color: #f5f5f5;
-    border-top: 1px solid #eee;
-  }
-  
-  .selected-time-details h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    color: #333;
-  }
-  
-  .time-details {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .time-details p {
-    margin: 0;
-    color: #555;
-  }
-  
-  .time-details strong {
-    color: #333;
-  }
-  
-  .members-list, .votes-list {
-    margin-top: 10px;
-  }
-  
-  .members-list p, .votes-list p {
-    margin: 0 0 5px 0;
-  }
-  
-  .members-list ul, .votes-list ul {
-    margin: 0;
-    padding-left: 20px;
-    color: #666;
-  }
-  
-  .members-list li, .votes-list li {
-    margin-bottom: 3px;
-  }
-  
-  .selected-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-  }
-  
-  .suggest-btn {
-    background-color: #2196f3;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-  }
-  
-  .suggest-btn:hover {
-    background-color: #1976d2;
-  }
-  
-  .schedule-btn {
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-  }
-  
-  .schedule-btn:hover {
-    background-color: #45a049;
-  }
-  
-  .schedule-btn:disabled {
-    background-color: #bdbdbd;
-    cursor: not-allowed;
-  }
-  
-  /* Modal Overlay */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.find-times-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  z-index: 10;
+  border-radius: 10px 10px 0 0;
+}
+
+.find-times-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #777;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-btn:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.find-times-settings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #555;
+}
+
+.form-group input {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.form-group.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-group.checkbox input {
+  margin: 0;
+}
+
+.search-btn {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: auto;
+}
+
+.search-btn:hover {
+  background-color: #1976d2;
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 10px 20px;
+  margin: 10px 20px;
+  border-radius: 4px;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.free-times-results, .saved-time-slots {
+  padding: 20px;
+}
+
+.free-times-results h3, .saved-time-slots h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* Reduced gap to make day groups visually cohesive */
+  margin-bottom: 20px;
+}
+
+/* Day header styling */
+.day-header {
+  background-color: #f5f5f5;
+  padding: 8px 15px;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.day-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.time-slot {
+  display: grid;
+  grid-template-columns: 150px 1fr auto; /* Adjusted since we're hiding the date */
+  align-items: center;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-left: 5px solid transparent;
+  margin-bottom: 2px; /* Make slots within the same day stick together visually */
+}
+
+.time-slot:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.time-slot.selected {
+  background-color: #e8f5e9;
+  border-left-color: #4caf50;
+}
+
+.time-slot.already-saved {
+  background-color: #e3f2fd;
+  border-left-color: #2196f3;
+}
+
+/* Availability color indicators */
+.time-slot.high-availability, .saved-time-slot.high-availability {
+  border-left-color: #4caf50;
+}
+
+.time-slot.medium-availability, .saved-time-slot.medium-availability {
+  border-left-color: #ffeb3b;
+}
+
+.time-slot.low-availability, .saved-time-slot.low-availability {
+  border-left-color: #ff9800;
+}
+
+.time-slot.very-low-availability, .saved-time-slot.very-low-availability {
+  border-left-color: #f44336;
+}
+
+.time-slot-date {
+  display: none; /* Hide individual dates since we now use day headers */
+  font-weight: 600;
+  color: #333;
+}
+
+.time-slot-time {
+  color: #555;
+  font-weight: 600;
+}
+
+.time-slot-availability {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.availability-bar {
+  height: 8px;
+  background-color: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.availability-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.availability-fill.high-availability {
+  background-color: #4caf50;
+}
+
+.availability-fill.medium-availability {
+  background-color: #ffeb3b;
+}
+
+.availability-fill.low-availability {
+  background-color: #ff9800;
+}
+
+.availability-fill.very-low-availability {
+  background-color: #f44336;
+}
+
+.availability-text {
+  font-size: 13px;
+  color: #666;
+}
+
+.suggest-time-btn, .vote-btn {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.suggest-time-btn:hover, .vote-btn:hover {
+  background-color: #1976d2;
+}
+
+.vote-btn.voted {
+  background-color: #4caf50;
+}
+
+.time-slot-saved {
+  color: #1976d2;
+  font-weight: 600;
+}
+
+.no-times-found {
+  text-align: center;
+  padding: 30px;
+  color: #777;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border: 1px dashed #ddd;
+}
+
+/* Time Slots Grid Layout */
+.time-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.saved-time-slot {
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-left: 5px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+
+.saved-time-slot:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.saved-time-slot.selected {
+  background-color: #e8f5e9;
+}
+
+.saved-time-slot.threshold-reached {
+  border: 2px solid #4caf50;
+}
+
+.threshold-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 20px;
+}
+
+.time-slot-votes {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.votes-count {
+  font-weight: 600;
+  color: #555;
+}
+
+/* Selected Time Details */
+.selected-time-details {
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-top: 1px solid #eee;
+}
+
+.selected-time-details h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.time-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.time-details p {
+  margin: 0;
+  color: #555;
+}
+
+.time-details strong {
+  color: #333;
+}
+
+.members-list, .votes-list {
+  margin-top: 10px;
+}
+
+.members-list p, .votes-list p {
+  margin: 0 0 5px 0;
+}
+
+.members-list ul, .votes-list ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #666;
+}
+
+.members-list li, .votes-list li {
+  margin-bottom: 3px;
+}
+
+.selected-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.suggest-btn {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.suggest-btn:hover {
+  background-color: #1976d2;
+}
+
+.schedule-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.schedule-btn:hover {
+  background-color: #45a049;
+}
+
+.schedule-btn:disabled {
+  background-color: #bdbdbd;
+  cursor: not-allowed;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}

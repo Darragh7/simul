@@ -58,6 +58,13 @@ const BucketListView = ({ group, user, onFindTimes }) => {
           totalVotes: doc.data().totalVotes || 0
         });
       });
+      
+      // Sort by totalVotes (most votes first), then by createdAt (newest first)
+      items.sort((a, b) => {
+        if (b.totalVotes !== a.totalVotes) return b.totalVotes - a.totalVotes;
+        return b.createdAt?.seconds - a.createdAt?.seconds || 0;
+      });
+      
       setBucketItems(items);
       setLoading(false);
     });
