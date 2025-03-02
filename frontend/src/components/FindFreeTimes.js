@@ -26,7 +26,7 @@ const FindFreeTimes = ({ group, bucketItem, user, onClose, onScheduleEvent }) =>
   const [searchStartDate, setSearchStartDate] = useState(
     new Date(new Date().setHours(0, 0, 0, 0)).toISOString().split('T')[0]
   );
-  const [businessHoursOnly, setBusinessHoursOnly] = useState(true);
+  const [businessHoursOnly, setBusinessHoursOnly] = useState(false);
   const [timeSlots, setTimeSlots] = useState([]); // Stored time slots with votes
   const [groupMembers, setGroupMembers] = useState([]);
   const [confirmingEvent, setConfirmingEvent] = useState(false);
@@ -406,9 +406,29 @@ const FindFreeTimes = ({ group, bucketItem, user, onClose, onScheduleEvent }) =>
       }
       
       // Format date for the events collection
-      const date = selectedTimeSlot.date;
-      const dateKey = selectedTimeSlot.dateKey || 
-        `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+      // Fix: Properly handle the date based on where it's coming from
+      // If it's a direct Date object, use it; if it's a Firestore timestamp, convert it; 
+      // otherwise, use the dateKey
+      let date;
+      let dateKey;
+      
+      if (selectedTimeSlot.date instanceof Date) {
+        // Fresh time slot with JavaScript Date object
+        date = selectedTimeSlot.date;
+        dateKey = selectedTimeSlot.dateKey || 
+          `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+      } else if (selectedTimeSlot.dateObj && typeof selectedTimeSlot.dateObj.toDate === 'function') {
+        // Time slot from Firestore with Timestamp object
+        date = selectedTimeSlot.dateObj.toDate();
+        dateKey = selectedTimeSlot.date || 
+          `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+      } else {
+        // Fallback to using the dateKey directly if it exists
+        dateKey = selectedTimeSlot.dateKey;
+        if (!dateKey) {
+          throw new Error("Cannot determine date for the event");
+        }
+      }
       
       // Get existing events for that date or create a new object
       const eventsRef = doc(db, `events/${group.id}/dates`, dateKey);
@@ -458,7 +478,7 @@ const FindFreeTimes = ({ group, bucketItem, user, onClose, onScheduleEvent }) =>
             type: "event-scheduled",
             status: "unread",
             createdAt: new Date().toISOString(),
-            message: `"${bucketItem.title}" has been scheduled for ${formatDate(date)} at ${formatTime(startHour)}`,
+            message: `"${bucketItem.title}" has been scheduled for ${formatDate(date || new Date())} at ${formatTime(startHour)}`,
             groupId: group.id,
             bucketItemId: bucketItem.id
           });

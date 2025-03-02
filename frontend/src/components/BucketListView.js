@@ -28,6 +28,14 @@ const BucketListView = ({ group, user, onFindTimes }) => {
     durationHours: 2,
     voteThreshold: 3, // Default threshold for votes
   });
+  // Add state for editing
+  const [editItem, setEditItem] = useState(null);
+  const [editItemData, setEditItemData] = useState({
+    title: '',
+    description: '',
+    durationHours: 2,
+    voteThreshold: 3,
+  });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [groupMembers, setGroupMembers] = useState([]);
@@ -97,6 +105,24 @@ const BucketListView = ({ group, user, onFindTimes }) => {
     }
   };
 
+  // Handle input change for editing
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Convert numeric fields to numbers
+    if (name === 'durationHours' || name === 'voteThreshold') {
+      setEditItemData({
+        ...editItemData,
+        [name]: Number(value)
+      });
+    } else {
+      setEditItemData({
+        ...editItemData,
+        [name]: value
+      });
+    }
+  };
+
   const handleAddItem = async (e) => {
     e.preventDefault();
     setError('');
@@ -139,6 +165,70 @@ const BucketListView = ({ group, user, onFindTimes }) => {
     } catch (error) {
       console.error('Error adding bucket list item:', error);
       setError('Failed to add item. Please try again.');
+    }
+  };
+
+  // Start editing an item
+  const handleStartEdit = (item) => {
+    setEditItem(item.id);
+    setEditItemData({
+      title: item.title,
+      description: item.description || '',
+      durationHours: item.durationHours,
+      voteThreshold: item.voteThreshold || 3,
+    });
+    setShowAddForm(false); // Close add form if it's open
+  };
+
+  // Cancel editing an item
+  const handleCancelEdit = () => {
+    setEditItem(null);
+    setEditItemData({
+      title: '',
+      description: '',
+      durationHours: 2,
+      voteThreshold: 3,
+    });
+  };
+
+  // Save edited item
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (!editItemData.title.trim()) {
+      setError('Please enter a title for the event');
+      return;
+    }
+
+    if (!editItemData.durationHours || editItemData.durationHours <= 0) {
+      setError('Please enter a valid duration');
+      return;
+    }
+
+    try {
+      const bucketItemRef = doc(db, `groups/${group.id}/bucketList`, editItem);
+      
+      await updateDoc(bucketItemRef, {
+        title: editItemData.title,
+        description: editItemData.description,
+        durationHours: editItemData.durationHours,
+        voteThreshold: editItemData.voteThreshold,
+        lastEditedAt: Timestamp.now()
+      });
+
+      setSuccess('Item updated successfully!');
+      setEditItem(null);
+      setEditItemData({
+        title: '',
+        description: '',
+        durationHours: 2,
+        voteThreshold: 3,
+      });
+    } catch (error) {
+      console.error('Error updating bucket list item:', error);
+      setError('Failed to update item. Please try again.');
     }
   };
 
@@ -255,7 +345,10 @@ const BucketListView = ({ group, user, onFindTimes }) => {
         <h2>Group Bucket List</h2>
         <button 
           className="add-bucket-item-btn"
-          onClick={() => setShowAddForm(!showAddForm)}
+          onClick={() => {
+            setShowAddForm(!showAddForm);
+            setEditItem(null); // Cancel any editing when showing add form
+          }}
         >
           {showAddForm ? 'Cancel' : '+ Add New Item'}
         </button>
@@ -337,59 +430,138 @@ const BucketListView = ({ group, user, onFindTimes }) => {
             const userVote = getUserVote(item.votes);
             const reachedThreshold = hasReachedThreshold(item);
             
+            // Check if this item is being edited
+            const isEditing = editItem === item.id;
+            
             return (
               <div key={item.id} className="bucket-item">
-                <div className="bucket-item-header">
-                  <div className="item-title-container">
-                    <h3>{item.title}</h3>
-                    {getStatusTag(item.status)}
-                    {reachedThreshold && item.status !== 'scheduled' && item.status !== 'completed' && (
-                      <span className="threshold-reached-badge">Ready to Schedule!</span>
+                {isEditing ? (
+                  // Edit form
+                  <div className="edit-bucket-form">
+                    <h3>Edit Bucket List Item</h3>
+                    <form onSubmit={handleSaveEdit}>
+                      <div className="form-group">
+                        <label htmlFor="edit-title">Event Title*</label>
+                        <input
+                          type="text"
+                          id="edit-title"
+                          name="title"
+                          value={editItemData.title}
+                          onChange={handleEditInputChange}
+                          placeholder="e.g., Bowling, Movie Night"
+                          required
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="edit-description">Description</label>
+                        <textarea
+                          id="edit-description"
+                          name="description"
+                          value={editItemData.description}
+                          onChange={handleEditInputChange}
+                          placeholder="Add details about this event"
+                          rows="3"
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="edit-durationHours">Duration (hours)*</label>
+                        <input
+                          type="number"
+                          id="edit-durationHours"
+                          name="durationHours"
+                          value={editItemData.durationHours}
+                          onChange={handleEditInputChange}
+                          min="0.5"
+                          step="0.5"
+                          required
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="edit-voteThreshold">Voting Threshold*</label>
+                        <input
+                          type="number"
+                          id="edit-voteThreshold"
+                          name="voteThreshold"
+                          value={editItemData.voteThreshold}
+                          onChange={handleEditInputChange}
+                          min="1"
+                          step="1"
+                          required
+                        />
+                        <small>Number of upvotes required to finalize the event</small>
+                      </div>
+
+                      <div className="form-actions">
+                        <button type="submit" className="submit-btn">Save Changes</button>
+                        <button type="button" className="cancel-btn" onClick={handleCancelEdit}>Cancel</button>
+                      </div>
+                    </form>
+                  </div>
+                ) : (
+                  // Normal view
+                  <>
+                    <div className="bucket-item-header">
+                      <div className="item-title-container">
+                        <h3>{item.title}</h3>
+                        {getStatusTag(item.status)}
+                        {reachedThreshold && item.status !== 'scheduled' && item.status !== 'completed' && (
+                          <span className="threshold-reached-badge">Ready to Schedule!</span>
+                        )}
+                      </div>
+                      <div className="voting-controls">
+                        <button 
+                          className={`vote-btn upvote ${userVote === 1 ? 'active' : ''}`}
+                          onClick={() => handleVote(item.id, userVote === 1 ? 0 : 1)}
+                          disabled={item.status === 'scheduled' || item.status === 'completed'}
+                        >
+                          <span className="vote-icon">👍</span>
+                          <span className="vote-count">{upvotes}</span>
+                        </button>
+                        <button 
+                          className={`vote-btn downvote ${userVote === -1 ? 'active' : ''}`}
+                          onClick={() => handleVote(item.id, userVote === -1 ? 0 : -1)}
+                          disabled={item.status === 'scheduled' || item.status === 'completed'}
+                        >
+                          <span className="vote-icon">👎</span>
+                          <span className="vote-count">{downvotes}</span>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {item.description && (
+                      <div className="bucket-item-description">{item.description}</div>
                     )}
-                  </div>
-                  <div className="voting-controls">
-                    <button 
-                      className={`vote-btn upvote ${userVote === 1 ? 'active' : ''}`}
-                      onClick={() => handleVote(item.id, userVote === 1 ? 0 : 1)}
-                      disabled={item.status === 'scheduled' || item.status === 'completed'}
-                    >
-                      <span className="vote-icon">👍</span>
-                      <span className="vote-count">{upvotes}</span>
-                    </button>
-                    <button 
-                      className={`vote-btn downvote ${userVote === -1 ? 'active' : ''}`}
-                      onClick={() => handleVote(item.id, userVote === -1 ? 0 : -1)}
-                      disabled={item.status === 'scheduled' || item.status === 'completed'}
-                    >
-                      <span className="vote-icon">👎</span>
-                      <span className="vote-count">{downvotes}</span>
-                    </button>
-                  </div>
-                </div>
-                
-                {item.description && (
-                  <div className="bucket-item-description">{item.description}</div>
+                    
+                    <div className="bucket-item-details">
+                      <span className="duration">{item.durationHours} hour{item.durationHours !== 1 ? 's' : ''}</span>
+                      <span className="creator">Added by: {item.createdBy}</span>
+                      <span className="threshold">Threshold: {item.voteThreshold || 3} votes</span>
+                    </div>
+                    
+                    <div className="bucket-item-actions">
+                      <button 
+                        className="find-times-btn"
+                        onClick={() => handleFindTimes(item)}
+                        disabled={item.status === 'completed'}
+                      >
+                        Find Free Times
+                      </button>
+                      
+                      {user.email === item.createdBy && (
+                        <button 
+                          className="edit-btn"
+                          onClick={() => handleStartEdit(item)}
+                          disabled={item.status === 'scheduled' || item.status === 'completed'}
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </div>
+                  </>
                 )}
-                
-                <div className="bucket-item-details">
-                  <span className="duration">{item.durationHours} hour{item.durationHours !== 1 ? 's' : ''}</span>
-                  <span className="creator">Added by: {item.createdBy}</span>
-                  <span className="threshold">Threshold: {item.voteThreshold || 3} votes</span>
-                </div>
-                
-                <div className="bucket-item-actions">
-                  <button 
-                    className="find-times-btn"
-                    onClick={() => handleFindTimes(item)}
-                    disabled={item.status === 'completed'}
-                  >
-                    Find Free Times
-                  </button>
-                  
-                  {user.email === item.createdBy && (
-                    <button className="edit-btn">Edit</button>
-                  )}
-                </div>
               </div>
             );
           })
