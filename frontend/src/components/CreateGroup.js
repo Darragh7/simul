@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase/firebase";
-import { 
-    collection, 
-    addDoc, 
-    Timestamp, 
-    query, 
-    where, 
-    getDocs, 
-    doc, 
-    setDoc, 
+import {
+    collection,
+    addDoc,
+    Timestamp,
+    query,
+    where,
+    getDocs,
+    doc,
+    setDoc,
     getDoc,
     updateDoc,
     arrayUnion
@@ -22,16 +22,18 @@ function CreateGroup({ userEmail, onGroupCreated }) {
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [existingGroups, setExistingGroups] = useState([]); // State for existing groups
+    const [selectedGroup, setSelectedGroup] = useState(""); // State for selected existing group
 
     // Fetch friends list
     useEffect(() => {
         const fetchFriends = async () => {
             if (!userEmail) return;
-            
+
             try {
                 setLoading(true);
                 const userSnap = await getDocs(query(collection(db, "users"), where("email", "==", userEmail)));
-                
+
                 if (!userSnap.empty) {
                     const userData = userSnap.docs[0].data();
                     setFriends(userData.friends || []);
@@ -49,14 +51,44 @@ function CreateGroup({ userEmail, onGroupCreated }) {
         fetchFriends();
     }, [userEmail]);
 
+    // Fetch existing groups
+    useEffect(() => {
+        const fetchExistingGroups = async () => {
+            if (!userEmail) return;
+
+            try {
+                setLoading(true);
+                const userGroupsRef = doc(db, "user_groups", userEmail);
+                const userGroupsSnap = await getDoc(userGroupsRef);
+
+                if (userGroupsSnap.exists()) {
+                    const groupIds = userGroupsSnap.data().groups || [];
+                    const groupsQuery = query(collection(db, "groups"), where("__name__", "in", groupIds));
+                    const groupsSnap = await getDocs(groupsQuery);
+                    const groups = groupsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setExistingGroups(groups);
+                } else {
+                    setExistingGroups([]);
+                }
+            } catch (err) {
+                console.error("Error fetching existing groups:", err);
+                setError("Failed to load existing groups");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchExistingGroups();
+    }, [userEmail]);
+
     const handleCreate = async () => {
         if (!userEmail) {
             setError("You must be logged in to create a group");
             return;
         }
 
-        if (!groupName.trim()) {
-            setError("Please enter a group name");
+        if (!groupName.trim() && !selectedGroup) {
+            setError("Please enter a group name or select an existing group");
             return;
         }
 
@@ -70,41 +102,47 @@ function CreateGroup({ userEmail, onGroupCreated }) {
         setCreating(true);
 
         try {
-            // Create a new group document in Firestore
-            const groupRef = await addDoc(collection(db, "groups"), {
-                name: groupName.trim(),
-                members: [userEmail], // Start with just the creator
-                pendingMembers: selectedFriends, // Track pending members
-                createdBy: userEmail,
-                createdAt: Timestamp.now(),
-                isActive: true // Set to true since creator is already in
-            });
+            let groupId;
 
-            const groupId = groupRef.id;
-            
-            // Create members subcollection with the creator
-            await setDoc(doc(db, `groups/${groupId}/members`, userEmail), {
-                email: userEmail,
-                displayName: userEmail.split('@')[0], // Simple display name from email
-                role: 'admin',
-                joinedAt: Timestamp.now()
-            });
-
-            // Update the user_groups collection for the creator
-            const userGroupsRef = doc(db, "user_groups", userEmail);
-            const userGroupsSnap = await getDoc(userGroupsRef);
-            
-            if (userGroupsSnap.exists()) {
-                // Update existing document with new group
-                await updateDoc(userGroupsRef, {
-                    groups: arrayUnion(groupId)
+            if (selectedGroup) {
+                // Add friends to an existing group
+                groupId = selectedGroup;
+                await updateDoc(doc(db, "groups", groupId), {
+                    pendingMembers: arrayUnion(...selectedFriends)
                 });
             } else {
-                // Create new document with this group
-                await setDoc(userGroupsRef, {
-                    email: userEmail,
-                    groups: [groupId]
+                // Create a new group
+                const groupRef = await addDoc(collection(db, "groups"), {
+                    name: groupName.trim(),
+                    members: [userEmail],
+                    pendingMembers: selectedFriends,
+                    createdBy: userEmail,
+                    createdAt: Timestamp.now(),
+                    isActive: true
                 });
+
+                groupId = groupRef.id;
+
+                await setDoc(doc(db, `groups/${groupId}/members`, userEmail), {
+                    email: userEmail,
+                    displayName: userEmail.split('@')[0],
+                    role: 'admin',
+                    joinedAt: Timestamp.now()
+                });
+
+                const userGroupsRef = doc(db, "user_groups", userEmail);
+                const userGroupsSnap = await getDoc(userGroupsRef);
+
+                if (userGroupsSnap.exists()) {
+                    await updateDoc(userGroupsRef, {
+                        groups: arrayUnion(groupId)
+                    });
+                } else {
+                    await setDoc(userGroupsRef, {
+                        email: userEmail,
+                        groups: [groupId]
+                    });
+                }
             }
 
             // Send invitations to selected friends
@@ -113,35 +151,29 @@ function CreateGroup({ userEmail, onGroupCreated }) {
                     to: friendEmail,
                     from: userEmail,
                     type: "group-invite",
-                    groupName: groupName.trim(),
+                    groupName: selectedGroup ? existingGroups.find(g => g.id === selectedGroup).name : groupName.trim(),
                     groupId: groupId,
                     status: "pending",
                     createdAt: Timestamp.now(),
-                    message: `${userEmail} invited you to join the group "${groupName.trim()}"`
+                    message: `${userEmail} invited you to join the group "${selectedGroup ? existingGroups.find(g => g.id === selectedGroup).name : groupName.trim()}"`
                 });
             });
 
             await Promise.all(invitationPromises);
 
-            // Fetch user's busy periods from Google Calendar (if available)
-            const userDoc = await getDoc(doc(db, "users", userEmail));
-            if (userDoc.exists() && userDoc.data().busyPeriods) {
-                console.log("User has Google Calendar busy periods that will be visible in the group calendar");
-            }
-
-            setSuccess("Group created and invitations sent!");
+            setSuccess(selectedGroup ? "Friends added to group and invitations sent!" : "Group created and invitations sent!");
             setGroupName("");
             setSelectedFriends([]);
-            
-            // Optionally navigate back to calendar view after creation
+            setSelectedGroup("");
+
             if (onGroupCreated) {
                 setTimeout(() => {
                     onGroupCreated();
                 }, 1500);
             }
         } catch (error) {
-            console.error("Error creating group:", error);
-            setError("Failed to create group");
+            console.error("Error creating group or adding friends:", error);
+            setError("Failed to create group or add friends");
         } finally {
             setCreating(false);
         }
@@ -157,8 +189,8 @@ function CreateGroup({ userEmail, onGroupCreated }) {
 
     return (
         <div className="create-group-container">
-            <h2>Create a New Group</h2>
-            
+            <h2>Create a New Group or Add Friends to an Existing Group</h2>
+
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
 
@@ -171,7 +203,24 @@ function CreateGroup({ userEmail, onGroupCreated }) {
                         placeholder="Enter group name"
                         value={groupName}
                         onChange={(e) => setGroupName(e.target.value)}
+                        disabled={!!selectedGroup}
                     />
+                </div>
+
+                <div className="select-existing-group">
+                    <h3>Or Add Friends to an Existing Group</h3>
+                    <select
+                        value={selectedGroup}
+                        onChange={(e) => setSelectedGroup(e.target.value)}
+                        disabled={loading || existingGroups.length === 0}
+                    >
+                        <option value="">Select a group</option>
+                        {existingGroups.map((group) => (
+                            <option key={group.id} value={group.id}>
+                                {group.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 <div className="select-friends">
@@ -201,12 +250,12 @@ function CreateGroup({ userEmail, onGroupCreated }) {
                     Selected: {selectedFriends.length} friend(s)
                 </div>
 
-                <button 
-                    onClick={handleCreate} 
-                    disabled={creating || !groupName.trim() || selectedFriends.length === 0}
+                <button
+                    onClick={handleCreate}
+                    disabled={creating || (!groupName.trim() && !selectedGroup) || selectedFriends.length === 0}
                     className="create-group-btn"
                 >
-                    {creating ? "Creating..." : "Create Group"}
+                    {creating ? (selectedGroup ? "Adding Friends..." : "Creating...") : (selectedGroup ? "Add Friends to Group" : "Create Group")}
                 </button>
             </div>
         </div>
