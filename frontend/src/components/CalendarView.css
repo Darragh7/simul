@@ -1,272 +1,199 @@
+/* Calendar Container */
 .calendar-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    background-color: white;
-  }
-  
-  .view-mode-toggle {
-    display: flex;
-    margin-bottom: 20px;
-    border-radius: 4px;
-    overflow: hidden;
-    width: fit-content;
-  }
-  
-  .toggle-btn {
-    padding: 8px 16px;
-    background-color: #f1f1f1;
-    border: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-  }
-  
-  .toggle-btn:first-child {
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-  }
-  
-  .toggle-btn:last-child {
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-  }
-  
-  .toggle-btn.active {
-    background-color: #4285f4;
-    color: white;
-  }
-  
-  .calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .arrow-btn {
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 4px;
-  }
-  
-  .arrow-btn:hover {
-    background-color: #f0f0f0;
-  }
-  
-  .month-dropdown-container {
-    position: relative;
-  }
-  
-  .month-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 200px;
-    max-height: 300px;
-    overflow-y: auto;
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    z-index: 100;
-  }
-  
-  .month-option {
-    padding: 8px 12px;
-    cursor: pointer;
-  }
-  
-  .month-option:hover {
-    background-color: #f0f0f0;
-  }
-  
-  .find-free-time-btn {
-    padding: 8px 16px;
-    background-color: #4285f4;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .find-free-time-btn:hover {
-    background-color: #3367d6;
-  }
-  
-  .find-free-time-btn.active {
-    background-color: #34a853;
-  }
-  
-  .weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 10px;
-  }
-  
-  .days-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-    max-height: 600px;
-    overflow-y: auto;
-  }
-  
-  .empty-day, .day {
-    aspect-ratio: 1/1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-  }
-  
-  .day {
-    background-color: #f9f9f9;
-    cursor: pointer;
-  }
-  
-  .day:hover {
-    background-color: #f0f0f0;
-  }
-  
-  .back-btn {
-    margin-bottom: 15px;
-    padding: 8px 16px;
-    background-color: #f0f0f0;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .back-btn:hover {
-    background-color: #e0e0e0;
-  }
-  
-  .hourly-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    max-height: 600px;
-    overflow-y: auto;
-  }
-  
-  .hour-slot {
-    display: flex;
-    padding: 10px;
-    background-color: #f9f9fa;
-    border-radius: 4px;
-    cursor: pointer;
-    min-height: 50px;
-  }
-  
-  .hour-slot:hover {
-    background-color: #f0f0f0;
-  }
-  
-  .hour-slot.booked {
-    background-color: #d1e7dd;
-    border-left: 4px solid #198754;
-  }
-  
-  .hour-slot.calendar-busy {
-    background-color: #f8d7da;
-    border-left: 4px solid #dc3545;
-  }
-  
-  .hour-slot.free {
-    background-color: #cfe2ff;
-    border-left: 4px solid #0d6efd;
-  }
-  
-  .hour-slot.booked.calendar-busy {
-    background: linear-gradient(135deg, #d1e7dd 50%, #f8d7da 50%);
-    border-left: 4px solid #6c757d;
-  }
-  
-  .slot-time {
-    width: 120px;
-    font-weight: bold;
-  }
-  
-  .event-details, .busy-details {
-    flex: 1;
-  }
-  
-  .event-title, .busy-title {
-    font-weight: bold;
-  }
-  
-  .event-creator, .busy-members {
-    font-size: 0.85em;
-    color: #666;
-  }
-  
-  .free-indicator {
-    color: #0d6efd;
-    font-weight: bold;
-  }
-  
-  .event-input-container {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
-  }
-  
-  .event-input-container input {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-  
-  .event-input-container button {
-    padding: 8px 16px;
-    background-color: #4285f4;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .event-input-container button:hover {
-    background-color: #3367d6;
-  }
-  
-  .loading {
-    text-align: center;
-    padding: 20px;
-    font-style: italic;
-    color: #666;
-  }
-  
-  .no-group-message {
-    padding: 30px;
-    text-align: center;
-    color: #666;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    font-size: 16px;
-  }
-  
-  /* Modal overlay for the find times component */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* View Mode Toggle */
+.view-mode-toggle {
+  display: flex;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  width: fit-content;
+  background: rgba(240, 244, 248, 0.8);
+  padding: 4px;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  color: #23395B;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.toggle-btn.active {
+  background: linear-gradient(135deg, #211876, #4f40a1);
+  color: white;
+  box-shadow: 0 4px 12px rgba(44, 111, 252, 0.3);
+}
+
+.toggle-btn:hover {
+  background: rgba(224, 224, 224, 0.5);
+}
+
+/* Weekdays */
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: bold;
+  color: #23395B;
+  margin-bottom: 10px;
+}
+
+/* Days Grid */
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.empty-day, .day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.day {
+  background: rgba(240, 244, 248, 0.8);
+  cursor: pointer;
+  color: #23395B;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.day:hover {
+  background: linear-gradient(135deg, #211876, #4f40a1);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(44, 111, 252, 0.3);
+}
+
+/* Month Dropdown */
+.month-dropdown-container {
+  position: relative;
+}
+
+.month-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(224, 224, 224, 0.5);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+.month-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #23395B;
+}
+
+.month-option:hover {
+  background: rgba(240, 244, 248, 0.8);
+}
+
+/* Hourly Grid */
+.hourly-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.hour-slot {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  background: rgba(240, 244, 248, 0.8);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 60px;
+  text-align: center;
+  color: #23395B;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid transparent;
+}
+
+.hour-slot:hover {
+  background: linear-gradient(135deg, #2C6FFC, #4A90E2);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(66, 133, 244, 0.3);
+}
+
+.hour-slot.booked {
+  background: linear-gradient(135deg, #1a3b5c, #234a73);
+  border-left-color: #0f2642;
+  color: white;
+}
+
+.hour-slot.calendar-busy {
+  background: linear-gradient(135deg, #4A7CAE, #6B8EB4);
+  border-left-color: #375F7D;
+  color: white;
+}
+
+.hour-slot.free {
+  background: linear-gradient(135deg, #2E7D32, #4CAF50);
+  border-left-color: #1B5E20;
+  color: white;
+}
+
+.hour-slot.booked.calendar-busy {
+  background: linear-gradient(135deg, #1a3b5c 50%, #4A7CAE 50%);
+  border-left-color: #6c757d;
+  color: white;
+}
+
+.slot-time {
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.event-details, .busy-details {
+  flex: 1;
+  font-size: 0.85em;
+}
+
+.event-title, .busy-title {
+  font-weight: bold;
+}
+
+.event-creator, .busy-members {
+  font-size: 0.8em;
+  color: #666;
+}
+
+/* Find Free Time Button */
+.find-free-time-btn {
+  background: linear-gradient(135deg, #2C6FFC, #4A90E2);
+  color: white;
+}
