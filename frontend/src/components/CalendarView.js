@@ -119,60 +119,65 @@ const CalendarView = ({ group, user }) => {
         
         // Process each user's busy periods
         Object.entries(userBusyPeriodsRef.current).forEach(([userId, periods]) => {
-            periods.forEach(period => {
-                if (period.start && period.start.includes('T')) { // Has time component
-                    try {
-                        // Parse dates properly
-                        const startTime = new Date(period.start);
-                        const endTime = new Date(period.end);
-                        
-                        // Round to the nearest hour
-                        let currentHour = new Date(
-                            startTime.getFullYear(),
-                            startTime.getMonth(),
-                            startTime.getDate(),
-                            startTime.getHours(),
-                            0, 0
-                        );
-                        
-                        // Iterate through each hour slot
-                        while (currentHour < endTime) {
-                            const dateKey = `${currentHour.getFullYear()}-${currentHour.getMonth() + 1}-${currentHour.getDate()}`;
-                            const timeSlot = `${currentHour.getHours()}:00 - ${currentHour.getHours() + 1}:00`;
-                            
-                            if (!busyPeriodsMap[dateKey]) {
-                                busyPeriodsMap[dateKey] = {};
-                            }
-                            
-                            if (!busyPeriodsMap[dateKey][timeSlot]) {
-                                busyPeriodsMap[dateKey][timeSlot] = [];
-                            }
-                            
-                            // Check if this user is already in the list
-                            const existingEntry = busyPeriodsMap[dateKey][timeSlot]
-                                .find(entry => entry.userId === userId);
-                                
-                            if (!existingEntry) {
-                                // Add this user to the list of busy members for this slot
-                                busyPeriodsMap[dateKey][timeSlot].push({
-                                    userId,
-                                    displayName: period.userDisplayName || userId,
-                                    source: period.source || 'google'
-                                });
-                            }
-                            
-                            // Move to next hour
-                            currentHour.setHours(currentHour.getHours() + 1);
-                        }
-                    } catch (error) {
-                        console.error("Error processing busy period:", error, period);
-                    }
+          periods.forEach(period => {
+            if (period.start && period.start.includes('T')) { // Has time component
+              try {
+                // Parse dates properly
+                const startTime = new Date(period.start);
+                const endTime = new Date(period.end);
+                
+                // Round to the nearest hour
+                let currentHour = new Date(
+                  startTime.getFullYear(),
+                  startTime.getMonth(),
+                  startTime.getDate(),
+                  startTime.getHours(),
+                  0, 0
+                );
+                
+                // Iterate through each hour slot
+                while (currentHour < endTime) {
+                  // Use the getDateKey helper function for consistent formatting
+                  const dateKey = getDateKey(
+                    currentHour.getFullYear(), 
+                    currentHour.getMonth() + 1, 
+                    currentHour.getDate()
+                  );
+                  const timeSlot = `${currentHour.getHours()}:00 - ${currentHour.getHours() + 1}:00`;
+                  
+                  if (!busyPeriodsMap[dateKey]) {
+                    busyPeriodsMap[dateKey] = {};
+                  }
+                  
+                  if (!busyPeriodsMap[dateKey][timeSlot]) {
+                    busyPeriodsMap[dateKey][timeSlot] = [];
+                  }
+                  
+                  // Check if this user is already in the list
+                  const existingEntry = busyPeriodsMap[dateKey][timeSlot]
+                    .find(entry => entry.userId === userId);
+                    
+                  if (!existingEntry) {
+                    // Add this user to the list of busy members for this slot
+                    busyPeriodsMap[dateKey][timeSlot].push({
+                      userId,
+                      displayName: period.userDisplayName || userId,
+                      source: period.source || 'google'
+                    });
+                  }
+                  
+                  // Move to next hour
+                  currentHour.setHours(currentHour.getHours() + 1);
                 }
-            });
+              } catch (error) {
+                console.error("Error processing busy period:", error, period);
+              }
+            }
+          });
         });
         
         return busyPeriodsMap;
-    };
+      };
 
     // Set up real-time listeners for each member's busy periods
     useEffect(() => {
@@ -237,9 +242,14 @@ const CalendarView = ({ group, user }) => {
         setSelectedDate(day);
     };
 
+    // Ensure consistent date key format
+    const getDateKey = (year, month, day) => {
+        return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    };
+
     const handleSlotClick = (time) => {
         // Only allow selecting non-busy slots
-        const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`;
+        const dateKey = getDateKey(currentDate.getFullYear(), currentDate.getMonth() + 1, selectedDate);
         const event = events[dateKey]?.[time];
         const busyMembers = memberBusyPeriods[dateKey]?.[time] || [];
         
@@ -290,7 +300,7 @@ const CalendarView = ({ group, user }) => {
             return;
         }
 
-        const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`;
+        const dateKey = getDateKey(currentDate.getFullYear(), currentDate.getMonth() + 1, selectedDate);
         
         // Use user email from the props or display name if available
         const userIdentifier = user?.email || user?.displayName || "anonymous";
@@ -453,7 +463,7 @@ const CalendarView = ({ group, user }) => {
 
                             <div className="hourly-grid">
                                 {timeSlots.map((slot, index) => {
-                                    const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${selectedDate}`;
+                                    const dateKey = getDateKey(currentDate.getFullYear(), currentDate.getMonth() + 1, selectedDate);
                                     const event = events[dateKey]?.[slot];
                                     const isBusyFromCalendar = isBusyFromMemberCalendars(dateKey, slot);
                                     const busyMembers = getBusyMembers(dateKey, slot);
