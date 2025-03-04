@@ -35,7 +35,7 @@
 }
 
 .toggle-btn.active {
-  background: linear-gradient(135deg, #2C6FFC, #4A90E2);
+  background: linear-gradient(135deg, #211876, #4f40a1);
   color: white;
   box-shadow: 0 4px 12px rgba(44, 111, 252, 0.3);
 }
@@ -79,7 +79,7 @@
 }
 
 .day:hover {
-  background: linear-gradient(135deg, #2C6FFC, #4A90E2);
+  background: linear-gradient(135deg, #211876, #4f40a1);
   color: white;
   transform: scale(1.05);
   box-shadow: 0 8px 24px rgba(44, 111, 252, 0.3);
