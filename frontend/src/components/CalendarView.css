@@ -86,35 +86,53 @@
 }
 
 /* Month Dropdown */
+/* Month Dropdown */
+/* Month Dropdown */
 .month-dropdown-container {
   position: relative;
+  display: inline-block;
 }
 
 .month-dropdown {
   position: absolute;
   top: 100%;
-  left: 0;
-  width: 200px;
-  max-height: 300px;
-  overflow-y: auto;
+  left: 50%;
+  width: 400px; /* Adjust width to fit months properly */
   background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(224, 224, 224, 0.5);
+  border: 1px solid rgba(224, 224, 224, 0.6);
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(10px);
-  z-index: 100;
+  z-index: 150;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columns, fits properly */
+  gap: 8px;
 }
 
 .month-option {
-  padding: 8px 12px;
+  padding: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.3s ease, transform 0.2s ease;
   color: #23395B;
+  font-size: 1rem;
+  text-align: center;
+  border-radius: 6px;
+  background: rgba(240, 244, 248, 0.8);
+  font-weight: 600;
 }
 
 .month-option:hover {
-  background: rgba(240, 244, 248, 0.8);
+  background: rgba(224, 234, 247, 0.95);
+  transform: scale(1.05);
 }
+
+.month-option:active {
+  background: rgba(200, 220, 240, 0.85);
+  transform: scale(1);
+}
+
+
 
 /* Hourly Grid */
 .hourly-grid {
