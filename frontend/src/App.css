@@ -857,134 +857,138 @@
 }
 
 /* Inbox */
-/* Inbox Container - Improved */
+/* Inbox Container - Modernized */
 .inbox-container {
-  background: linear-gradient(145deg, #e6ecf3, #ffffff);
-  padding: 2rem;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-  max-width: 600px;
-  width: 100%;
-  margin: auto;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: 'Arial', sans-serif;
 }
 
-.inbox-container:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
-/* Inbox Header */
-.inbox-container h2 {
-  font-size: 1.85rem;
-  color: #1c3b57;
+h2 {
   text-align: center;
-  margin-bottom: 1.2rem;
-  font-weight: bold;
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 20px;
 }
 
-/* Section Titles */
-.inbox-section h3 {
-  font-size: 1.3rem;
-  color: #23395B;
-  margin-bottom: 1rem;
-  border-bottom: 2px solid #8EA8C3;
-  padding-bottom: 0.5rem;
+h3 {
+  font-size: 22px;
+  margin-top: 30px;
+  color: #444;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 8px;
 }
 
-/* Notification List */
-.notification-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-height: 350px;
-  overflow-y: auto;
-  padding-right: 10px;
+.error-message, .success-message {
+  padding: 12px;
+  margin: 15px 0;
+  border-radius: 8px;
+  font-size: 16px;
+  text-align: center;
 }
 
-/* Notification Item - Improved */
-.notification-item {
-  background: #fff;
-  padding: 1rem;
-  border-radius: 10px;
-  border: 1px solid #8EA8C3;
+.error-message {
+  background: #ffefef;
+  color: #d32f2f;
+  border: 1px solid #d32f2f;
+}
+
+.success-message {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #2e7d32;
+}
+
+/* Friend Requests & Group Invites Styling */
+.friend-requests-list, .group-invites-list, .notifications-list {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0;
+}
+
+.request-item, .invite-item, .notification-item {
+  background: #f9f9f9;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.notification-item:hover {
-  background-color: #f7fbff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.request-item:hover, .invite-item:hover, .notification-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Notification Text */
-.notification-title {
-  font-size: 1.1rem;
-  color: #1c3b57;
-  font-weight: bold;
-}
-
-.notification-time {
-  font-size: 0.85rem;
-  color: #6c7d95;
-}
-
-/* Notification Buttons */
-.notification-actions {
+.request-info, .invite-info, .notification-info {
   display: flex;
-  gap: 0.75rem;
+  flex-direction: column;
 }
 
-.notification-btn {
-  padding: 0.5rem 1.2rem;
+.from-email, .group-name, .message {
+  font-weight: bold;
+  font-size: 16px;
+  color: #333;
+}
+
+.status {
+  font-size: 14px;
+  color: #666;
+}
+
+.request-actions, .invite-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Button Styling */
+button {
+  padding: 8px 14px;
   border: none;
-  font-size: 1rem;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-/* Accept Button */
-.accept-btn {
-  background-color: #28a745;
-  color: white;
+  font-size: 14px;
   font-weight: bold;
+  transition: background 0.2s ease, transform 0.1s ease;
 }
 
-.accept-btn:hover {
-  background-color: #218838;
+button:hover {
   transform: scale(1.05);
 }
 
-/* Reject Button */
-.reject-btn {
-  background-color: #dc3545;
-  color: white;
-  font-weight: bold;
+button:active {
+  transform: scale(1);
 }
 
-.reject-btn:hover {
-  background-color: #c82333;
-  transform: scale(1.05);
-}
 
-/* Scrollbar Styling */
-.notification-list::-webkit-scrollbar {
-  width: 8px;
-}
 
-.notification-list::-webkit-scrollbar-thumb {
-  background: #8EA8C3;
-  border-radius: 10px;
-}
 
-.notification-list::-webkit-scrollbar-track {
-  background: #f0f4f8;
-  border-radius: 10px;
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .inbox-container {
+      padding: 15px;
+  }
+
+  h2 {
+      font-size: 24px;
+  }
+
+  .request-item, .invite-item, .notification-item {
+      flex-direction: column;
+      align-items: flex-start;
+  }
+
+  .request-actions, .invite-actions {
+      margin-top: 8px;
+      justify-content: flex-end;
+  }
 }
 
 
