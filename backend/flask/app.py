@@ -26,7 +26,7 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # For development only
 try:
     # Initialize Firebase if not already initialized
     if not firebase_admin._apps:
-        cred = credentials.Certificate('servicekey.json')
+        cred = credentials.Certificate('simul-3ba34-firebase-adminsdk-fbsvc-4a466302ea.json')
         firebase_admin.initialize_app(cred)
     
     # Get Firestore database
