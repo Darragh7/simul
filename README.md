@@ -1,57 +1,124 @@
-# simul
-CS3305 Team Software Project Group 4 
+# Simul
 
-2. Project Description
-This is an important component of your project that many new developers often overlook.
+Simul is a collaborative scheduling and group activity management application that helps friends coordinate events and find free time slots across their busy schedules.
 
-Your description is an extremely important aspect of your project. A well-crafted description allows you to show off your work to other developers as well as potential employers.
+## Features
 
-The quality of a README description often differentiates a good project from a bad project. A good one takes advantage of the opportunity to explain and showcase:
+- **Group Management**: Create and manage groups of friends for different activities.
+- **Calendar Integration**: Connect with Google Calendar to automatically sync your schedule.
+- **Event Coordination**: Find mutually available time slots across group members.
+- **Bucket List**: Propose, vote on, and schedule group activities.
+- **Friend System**: Build your network and easily create groups with your friends.
+- **Notifications**: Stay updated with group events and friend requests.
 
-What your application does,
-Why you used the technologies you used,
-Some of the challenges you faced and features you hope to implement in the future.
-3. Table of Contents (Optional)
-If your README is very long, you might want to add a table of contents to make it easy for users to navigate to different sections easily. It will make it easier for readers to move around the project with ease.
+## Tech Stack
 
-4. How to Install and Run the Project
-If you are working on a project that a user needs to install or run locally in a machine like a "POS", you should include the steps required to install your project and also the required dependencies if any.
+### Frontend
+- React.js
+- Firebase Auth for user authentication
+- Firestore for real-time data storage
+- CSS for styling
 
-Provide a step-by-step description of how to get the development environment set and running.
+### Backend
+- Flask Python server for Google Calendar integration
+- Firebase Admin SDK for server-side operations
+- Google OAuth 2.0 for secure calendar access
 
-5. How to Use the Project
-Provide instructions and examples so users/contributors can use the project. This will make it easy for them in case they encounter a problem – they will always have a place to reference what is expected.
+## Project Structure
 
-You can also make use of visual aids by including materials like screenshots to show examples of the running project and also the structure and design principles used in your project.
+### Frontend Components
 
-Also if your project will require authentication like passwords or usernames, this is a good section to include the credentials.
+- **Authentication**: User login and signup handled by Firebase Authentication
+- **Group Management**: Create, join, and manage groups
+- **Calendar View**: View group schedules and events
+- **Bucket List**: Propose and vote on group activities
+- **Find Free Times**: Automatically find when all group members are available
+- **Friend System**: Add friends and invite them to groups
+- **Inbox**: Manage notifications, friend requests, and group invitations
 
-6. Include Credits
-If you worked on the project as a team or an organization, list your collaborators/team members. You should also include links to their GitHub profiles and social media too.
+### Backend Services
 
-Also, if you followed tutorials or referenced a certain material that might help the user to build that particular project, include links to those here as well.
+- **Google Calendar Integration**: Connect and sync with users' Google Calendars
+- **Availability Calculation**: Determine when group members are mutually available
+- **User Management**: Handle user authentication and profile data
+- **Notification System**: Generate and manage notifications for group activities
 
-This is just a way to show your appreciation and also to help others get a first hand copy of the project.
+## Getting Started
 
-7. Add a License
-For most README files, this is usually considered the last part. It lets other developers know what they can and cannot do with your project.
+### Prerequisites
 
-We have different types of licenses depending on the kind of project you are working on. Depending on the one you will choose it will determine the contributions your project gets.
+- Node.js and npm
+- Python 3.7+
+- Firebase account
+- Google Cloud Platform account with Calendar API enabled
 
-The most common one is the GPL License which allows other to make modification to your code and use it for commercial purposes. If you need help choosing a license, use check out this link: https://choosealicense.com/
+### Installation
 
-Up to this point what we have covered are the minimum requirements for a good README. But you might also want to consider adding the following sections to make it more eye catching and interactive.
+1. **Clone the repository**
+   ```
+   git clone https://github.com/yourusername/simul.git
+   cd simul
+   ```
 
-Additional README Sections
-8. Badges
-Badges aren't necessary, but using them is a simple way of letting other developers know that you know what you're doing.
+2. **Install frontend dependencies**
+   ```
+   npm install
+   ```
 
-Having this section can also be helpful to help link to important tools and also show some simple stats about your project like the number of forks, contributors, open issues etc...
+3. **Install backend dependencies**
+   ```
+   pip install -r requirements.txt
+   ```
 
-Below is a screenshot from one of my projects that shows how you can make use of badges:
+4. **Configure Firebase**
+   - Create a new Firebase project
+   - Enable Authentication with Email/Password
+   - Set up Firestore database
+   - Add your Firebase configuration to `src/firebase/firebase.js`
 
-badges
+5. **Configure Google Calendar API**
+   - Create OAuth credentials in Google Cloud Console
+   - Download client_secret.json and place it in the root directory
+   - Configure the OAuth consent screen
 
-The good thing about this section is that it automatically updates it self.
+6. **Start the backend server**
+   ```
+   python app.py
+   ```
 
-Don't know where to get them from? Check out the badges hosted by shields.io. They have a ton of badges to help you get started. You may not understand what they all represent now, but you will in time.
+7. **Start the frontend development server**
+   ```
+   npm start
+   ```
+
+## Firebase Data Structure
+
+- **users**: User profiles and availability information
+  - Email, displayName, friends list, busyPeriods
+
+- **groups**: Group information
+  - Name, members, pendingMembers, createdBy
+
+- **events**: Calendar events for each group
+  - Organized by date with time slots
+
+- **inbox**: Notifications and requests
+  - Friend requests, group invites, event notifications
+
+- **user_groups**: Quick lookup for user's group memberships
+  - Email, list of group IDs
+
+## Usage
+
+1. **Sign up or log in** to your Simul account
+2. **Connect your Google Calendar** for automatic scheduling
+3. **Add friends** by sending friend requests via email
+4. **Create a group** with your friends
+5. **Add events to your group calendar** or propose activities in the bucket list
+6. **Find free times** to schedule group activities when everyone is available
+7. **Vote on proposed activities** in the bucket list
+8. **Schedule events** based on group availability and preferences
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
