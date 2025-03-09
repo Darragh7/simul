@@ -1,7 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # client secrets
-client_secret_*.json
+client_secret*.json
+simul*.json
+backend/flask/*.json
 
 # dependencies
 node_modules/
